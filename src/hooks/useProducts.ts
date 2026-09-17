@@ -12,6 +12,8 @@ export interface ProductsContextValue {
   createProduct: (input: ProductInput) => Promise<Product>
   updateProduct: (id: string, input: Partial<ProductInput>) => Promise<Product>
   deleteProduct: (id: string) => Promise<void>
+  /** Backup import: replaces the whole catalogue, then reloads. */
+  replaceAll: (products: Product[]) => Promise<void>
 }
 
 export const ProductsContext = createContext<ProductsContextValue | null>(null)

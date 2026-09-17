@@ -4,6 +4,7 @@ import { RefreshCw, SlidersHorizontal } from 'lucide-react'
 import type { CategoryId, ProductFilters as Filters, SortOption } from '@/types/product'
 import { categories } from '@/data/categories'
 import { applyFilters, countActiveFilters } from '@/lib/filters'
+import { pluralize, plurals } from '@/lib/utils'
 import { useProducts } from '@/hooks/useProducts'
 import { useDocumentMeta } from '@/hooks/useDocumentMeta'
 import { useIsDesktop } from '@/hooks/useMediaQuery'
@@ -119,11 +120,7 @@ export default function ProductsPage() {
         <div className="min-w-0">
           <div className="flex items-center justify-between gap-3 border-b border-line pb-4">
             <p className="text-sm text-muted" aria-live="polite">
-              {loading ? 'جارٍ التحميل…' : (
-                <>
-                  <span className="num">{results.length}</span> {results.length === 1 ? 'منتج' : 'منتجات'}
-                </>
-              )}
+              {loading ? 'جارٍ التحميل…' : pluralize(results.length, plurals.product)}
             </p>
             <div className="flex items-center gap-2">
               {!isDesktop && (

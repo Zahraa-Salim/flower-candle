@@ -10,6 +10,8 @@ export interface SiteContentContextValue {
   /** Upload a photo (resized in the browser) into a hero slot. */
   setHeroImage: (slot: HeroSlot, file: File) => Promise<void>
   resetHeroImage: (slot: HeroSlot) => Promise<void>
+  /** Backup import: replaces all site content. */
+  replaceContent: (content: SiteContent) => Promise<void>
 }
 
 export const SiteContentContext = createContext<SiteContentContextValue | null>(null)

@@ -4,7 +4,7 @@ import { ImageIcon, Package, Pencil, Plus, RefreshCw, Star, Trash2 } from 'lucid
 import type { AvailabilityFilter, CategoryId, Product } from '@/types/product'
 import { categories, categoryName } from '@/data/categories'
 import { matchesQuery } from '@/lib/filters'
-import { cn, formatPrice } from '@/lib/utils'
+import { cn, formatPrice, pluralize, plurals } from '@/lib/utils'
 import { useProducts } from '@/hooks/useProducts'
 import { useToast } from '@/hooks/useToast'
 import { useDocumentMeta } from '@/hooks/useDocumentMeta'
@@ -106,7 +106,7 @@ export default function AdminProductsPage() {
     <div ref={rootRef} tabIndex={-1} className="flex flex-col gap-6 outline-none">
       <AdminPageHeader
         title="المنتجات"
-        description={status === 'ready' ? `${products.length} منتج في المتجر` : undefined}
+        description={status === 'ready' ? `${pluralize(products.length, plurals.product)} في المتجر` : undefined}
         action={
           <ButtonLink to="/admin/products/new" icon={<Plus className="size-4" aria-hidden />} className="hidden sm:inline-flex">
             إضافة منتج

@@ -15,6 +15,8 @@ export interface ProductRepository {
   create(input: ProductInput): Promise<Product>
   update(id: string, input: Partial<ProductInput>): Promise<Product>
   remove(id: string): Promise<void>
+  /** Replaces the whole catalogue (backup import). Rejects with an Arabic message when storage cannot hold it. */
+  replaceAll(products: Product[]): Promise<void>
 }
 
 /* ------------------------------------------------------------------ */
@@ -212,6 +214,24 @@ export class MockProductRepository implements ProductRepository {
     await this.enqueue(async () => {
       const list = await this.fresh()
       await this.persist(list.filter((p) => p.id !== id))
+    })
+  }
+
+  async replaceAll(products: Product[]): Promise<void> {
+    await sleep(this.latency)
+    await this.enqueue(async () => {
+      const seen = new Set<string>()
+      const coverByCategory = new Set<string>()
+      const next: Product[] = []
+      for (const raw of products) {
+        const p = sanitizeProduct(raw)
+        if (!p || seen.has(p.id)) continue
+        seen.add(p.id)
+        const keepCover = p.isCategoryCover === true && !coverByCategory.has(p.category)
+        if (keepCover) coverByCategory.add(p.category)
+        next.push({ ...p, isCategoryCover: keepCover })
+      }
+      await this.persist(next)
     })
   }
 }

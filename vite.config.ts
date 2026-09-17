@@ -2,6 +2,8 @@ import { fileURLToPath, URL } from 'node:url'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
+// Explicit extension: Vite's future native config loader requires it.
+import { mockProducts } from './src/data/products.ts'
 
 /** Trimmed env value, or the fallback when unset/blank (mirrors src/config/site.ts). */
 const read = (value: string | undefined, fallback = ''): string => (value ?? '').trim() || fallback
@@ -38,8 +40,49 @@ export default defineConfig(({ mode, command }) => {
     },
   }
 
+  /**
+   * robots.txt and sitemap.xml need the absolute site URL, so they are generated
+   * here (emitted into dist/ on build, served by middleware in dev) instead of
+   * living as static files in public/.
+   */
+  const robotsTxt = () => ['User-agent: *', 'Disallow: /admin', 'Disallow: /cart', `Sitemap: ${siteUrl}/sitemap.xml`, ''].join('\n')
+  const sitemapXml = () => {
+    const urls: { loc: string; lastmod?: string }[] = [
+      { loc: '/' },
+      { loc: '/products' },
+      { loc: '/about' },
+      ...mockProducts.map((p) => ({ loc: `/products/${encodeURI(p.id)}`, lastmod: p.createdAt.slice(0, 10) })),
+    ]
+    const entries = urls.map(
+      (u) => `  <url><loc>${escapeHtml(siteUrl + u.loc)}</loc>${u.lastmod ? `<lastmod>${u.lastmod}</lastmod>` : ''}</url>`,
+    )
+    return ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">', ...entries, '</urlset>', ''].join('\n')
+  }
+  const seoFiles: Plugin = {
+    name: 'shaghaf:seo-files',
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: 'robots.txt', source: robotsTxt() })
+      this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: sitemapXml() })
+    },
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (req.url === '/robots.txt') {
+          res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+          res.end(robotsTxt())
+          return
+        }
+        if (req.url === '/sitemap.xml') {
+          res.setHeader('Content-Type', 'application/xml; charset=utf-8')
+          res.end(sitemapXml())
+          return
+        }
+        next()
+      })
+    },
+  }
+
   return {
-    plugins: [react(), tailwindcss(), htmlEnv],
+    plugins: [react(), tailwindcss(), htmlEnv, seoFiles],
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),

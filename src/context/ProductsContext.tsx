@@ -61,6 +61,14 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     setProducts((list) => list.filter((p) => p.id !== id))
   }, [])
 
+  const replaceAll = useCallback(
+    async (next: Product[]) => {
+      await productRepository.replaceAll(next)
+      await reload()
+    },
+    [reload],
+  )
+
   const value = useMemo<ProductsContextValue>(
     () => ({
       products,
@@ -71,8 +79,9 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       createProduct,
       updateProduct,
       deleteProduct,
+      replaceAll,
     }),
-    [products, status, error, reload, createProduct, updateProduct, deleteProduct],
+    [products, status, error, reload, createProduct, updateProduct, deleteProduct, replaceAll],
   )
 
   return <ProductsContext.Provider value={value}>{children}</ProductsContext.Provider>

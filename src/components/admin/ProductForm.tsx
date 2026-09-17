@@ -1,4 +1,5 @@
-import { useDeferredValue, useMemo, useRef, useState, type FormEvent } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { useBlocker } from 'react-router-dom'
 import { ImageOff, Loader2, Plus, Upload, X } from 'lucide-react'
 import type { CategoryId, Product, ProductInput } from '@/types/product'
 import { categories } from '@/data/categories'
@@ -8,6 +9,7 @@ import { cn, pluralize, plurals } from '@/lib/utils'
 import { InputField, SelectField, Switch, TextareaField } from '@/components/ui/Field'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { ConfirmDialog } from '@/components/ui/Dialog'
 import { SmartImage } from '@/components/ui/SmartImage'
 
 interface FormValues {
@@ -130,6 +132,20 @@ export function ProductForm({ product, submitting, onSubmit, onCancel }: Product
   const [uploadingGallery, setUploadingGallery] = useState(false)
   const mainInputRef = useRef<HTMLInputElement>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
+
+  // Unsaved-changes guard: compare by value (gallery is an array, so reference equality would always be dirty).
+  const initialJson = useMemo(() => JSON.stringify(toValues(product)), [product])
+  const dirty = useMemo(() => JSON.stringify(values) !== initialJson, [values, initialJson])
+  // `submitting` is committed before the page navigates after a successful save, so the save itself is never blocked.
+  const blocker = useBlocker(dirty && !submitting)
+  useEffect(() => {
+    if (!dirty) return
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+    }
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [dirty])
 
   const set = <K extends keyof FormValues>(key: K, value: FormValues[K]) => {
     setValues((prev) => ({ ...prev, [key]: value }))
@@ -430,6 +446,21 @@ export function ProductForm({ product, submitting, onSubmit, onCancel }: Product
           </Button>
         </div>
       </aside>
+
+      <ConfirmDialog
+        open={blocker.state === 'blocked'}
+        title="مغادرة دون حفظ؟"
+        description="لديك تغييرات غير محفوظة. إذا غادرتِ الآن ستفقدين هذه التغييرات."
+        confirmLabel="مغادرة"
+        cancelLabel="البقاء"
+        destructive
+        onConfirm={() => {
+          if (blocker.state === 'blocked') blocker.proceed()
+        }}
+        onCancel={() => {
+          if (blocker.state === 'blocked') blocker.reset()
+        }}
+      />
     </form>
   )
 }

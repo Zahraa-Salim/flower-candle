@@ -15,6 +15,8 @@ export interface SiteContentRepository {
   /** Rejects when storage cannot be read at all (callers fall back to defaults). */
   get(): Promise<SiteContent>
   update(patch: Partial<SiteContent>): Promise<SiteContent>
+  /** Replaces all content (backup import); slots equal to the default drop their override. */
+  replace(content: SiteContent): Promise<SiteContent>
 }
 
 export const defaultSiteContent: SiteContent = {
@@ -26,6 +28,11 @@ interface StoredSiteContent {
 }
 
 const SLOTS: HeroSlot[] = ['main', 'detail']
+
+/** Coerces any stored/imported shape into a complete SiteContent, filling defaults. */
+export function normalizeSiteContent(raw: unknown): SiteContent {
+  return normalize(raw)
+}
 
 function normalize(raw: unknown): SiteContent {
   const candidate = (raw && typeof raw === 'object' ? raw : {}) as StoredSiteContent
@@ -52,6 +59,10 @@ class LocalSiteContentRepository implements SiteContentRepository {
     const task = this.queue.then(() => this.write(patch))
     this.queue = task.catch(() => undefined)
     return task
+  }
+
+  replace(content: SiteContent): Promise<SiteContent> {
+    return this.update({ hero: normalize(content).hero })
   }
 
   private async write(patch: Partial<SiteContent>): Promise<SiteContent> {

@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom'
 import { Menu, Search, ShoppingBag } from 'lucide-react'
 import { siteConfig } from '@/config/site'
 import { useCart } from '@/hooks/useCart'
-import { cn } from '@/lib/utils'
+import { cn, pluralize, plurals } from '@/lib/utils'
 import { MobileMenu } from './MobileMenu'
 
 const publicNav = [
@@ -41,6 +41,14 @@ export function Header() {
     <>
       <a
         href="#main"
+        onClick={(e) => {
+          // Global smooth scrolling is off (it animated every navigation); keep it for this one in-page jump.
+          const main = document.getElementById('main')
+          if (!main) return
+          e.preventDefault()
+          main.focus({ preventScroll: true })
+          main.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
+        }}
         className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:start-3 focus:z-[100] focus:rounded-md focus:bg-brown focus:px-4 focus:py-2 focus:text-ivory"
       >
         انتقلي إلى المحتوى
@@ -75,7 +83,7 @@ export function Header() {
             </Link>
             <Link
               to="/cart"
-              aria-label={count > 0 ? `السلة، ${count} قطعة` : 'السلة فارغة'}
+              aria-label={count > 0 ? `السلة، ${pluralize(count, plurals.piece)}` : 'السلة فارغة'}
               className="relative inline-flex size-11 items-center justify-center rounded-md text-brown-2 transition-colors hover:bg-brown/5 hover:text-brown"
             >
               <ShoppingBag className="size-5" aria-hidden />

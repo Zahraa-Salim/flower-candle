@@ -6,7 +6,8 @@ export function PublicLayout() {
   return (
     <>
       <Header />
-      <main id="main" className="flex-1">
+      {/* tabIndex -1 lets the skip link move focus here without adding a tab stop. */}
+      <main id="main" tabIndex={-1} className="flex-1 outline-none">
         <Outlet />
       </main>
       <Footer />

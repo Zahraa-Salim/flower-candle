@@ -19,4 +19,12 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    // Node-side files: the Vite config and the manual scripts (e.g. the og.jpg generator).
+    files: ['vite.config.ts', 'scripts/**/*.{js,mjs}'],
+    extends: [js.configs.recommended],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
 ])

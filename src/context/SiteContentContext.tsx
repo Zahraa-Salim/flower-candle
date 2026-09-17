@@ -41,6 +41,10 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
     setContent(next)
   }, [])
 
+  const replaceContent = useCallback(async (next: SiteContent) => {
+    setContent(await siteContentRepository.replace(next))
+  }, [])
+
   const value = useMemo<SiteContentContextValue>(
     () => ({
       content,
@@ -48,8 +52,9 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
       isCustomHero: (slot) => content.hero[slot] !== defaultHeroImages[slot],
       setHeroImage,
       resetHeroImage,
+      replaceContent,
     }),
-    [content, status, setHeroImage, resetHeroImage],
+    [content, status, setHeroImage, resetHeroImage, replaceContent],
   )
 
   return <SiteContentContext.Provider value={value}>{children}</SiteContentContext.Provider>

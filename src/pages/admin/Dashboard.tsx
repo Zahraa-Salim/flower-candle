@@ -6,6 +6,7 @@ import { categoryName } from '@/data/categories'
 import { cn, formatDate, formatPrice } from '@/lib/utils'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { HeroImagesEditor } from '@/components/admin/HeroImagesEditor'
+import { DataTransfer } from '@/components/admin/DataTransfer'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { SmartImage } from '@/components/ui/SmartImage'
 import { AvailabilityBadge, Badge } from '@/components/ui/Badge'
@@ -110,6 +111,8 @@ export default function AdminDashboardPage() {
           )}
         </ul>
       </section>
+
+      <DataTransfer />
     </div>
   )
 }

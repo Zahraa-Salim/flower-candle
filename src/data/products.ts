@@ -1,5 +1,5 @@
 import type { Product } from '@/types/product'
-import { images } from './images'
+import { images } from './images.ts' // explicit extension: this file is also imported by vite.config.ts
 
 /**
  * Demo catalogue. This is the seed for the mock repository and will be replaced

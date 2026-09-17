@@ -1,0 +1,38 @@
+<!doctype html>
+<!-- Template for public/og.jpg (1200×630). Rendered by scripts/og-image.mjs, which fills the %…% placeholders. -->
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      @font-face { font-family: "IBM Plex Sans Arabic"; font-weight: 300; src: url("%FONT_300%") format("woff2"); }
+      @font-face { font-family: "IBM Plex Sans Arabic"; font-weight: 400; src: url("%FONT_400%") format("woff2"); }
+      @font-face { font-family: "IBM Plex Sans Arabic"; font-weight: 500; src: url("%FONT_500%") format("woff2"); }
+      html, body { margin: 0; }
+      body {
+        width: 1200px; height: 630px; overflow: hidden; position: relative;
+        background: #fbf7f2; color: #403733;
+        font-family: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+      }
+      .wash { position: absolute; inset-inline-start: -140px; top: -120px; width: 620px; height: 620px; border-radius: 45% 55% 60% 40% / 50% 40% 60% 50%; background: rgba(240, 221, 216, 0.85); filter: blur(24px); }
+      .arch { position: absolute; inset-inline-end: 96px; top: 70px; width: 330px; height: 490px; border-radius: 999px 999px 18px 18px; background: linear-gradient(180deg, #f0ddd8 0%, #d9aaa5 100%); box-shadow: 0 18px 40px -20px rgba(64, 55, 51, 0.25); }
+      .arch::after { content: ""; position: absolute; inset: 22px; border-radius: 999px 999px 10px 10px; border: 2px solid rgba(251, 247, 242, 0.7); }
+      .petal { position: absolute; inset-inline-end: 230px; top: 250px; width: 66px; height: 66px; background: #964d49; border-radius: 100% 0; transform: rotate(45deg); opacity: 0.9; }
+      .text { position: absolute; inset-inline-start: 110px; top: 150px; width: 620px; }
+      .eyebrow { font-size: 26px; font-weight: 500; color: #964d49; margin: 0 0 18px; letter-spacing: 0; }
+      .brand { font-size: 150px; font-weight: 300; line-height: 1; margin: 0; letter-spacing: 0; }
+      .tagline { font-size: 40px; font-weight: 400; color: #665a54; margin: 26px 0 0; line-height: 1.35; letter-spacing: 0; }
+      .url { position: absolute; inset-inline-start: 110px; bottom: 56px; font-size: 22px; color: #726761; direction: ltr; }
+    </style>
+  </head>
+  <body>
+    <div class="wash"></div>
+    <div class="arch"></div>
+    <div class="petal"></div>
+    <div class="text">
+      <p class="eyebrow">شموع ورد وباقات مصنوعة يدوياً</p>
+      <h1 class="brand">%BRAND_NAME%</h1>
+      <p class="tagline">%TAGLINE%</p>
+    </div>
+    <p class="url">%SITE_HOST%</p>
+  </body>
+</html>
