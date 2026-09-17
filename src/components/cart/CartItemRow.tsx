@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Trash2 } from 'lucide-react'
+import { ImageOff, Trash2 } from 'lucide-react'
 import type { ResolvedCartItem } from '@/types/cart'
 import { categoryName } from '@/data/categories'
 import { cn, formatPrice } from '@/lib/utils'
@@ -17,7 +17,9 @@ export function CartItemRow({ item, onQuantity, onRemove }: CartItemRowProps) {
   const { product, quantity, missing } = item
   const href = `/products/${product.id}`
 
-  const image = (
+  // The snapshot never stores uploaded (data URL) photos; the live image arrives via reconciliation,
+  // so an empty src only happens while loading or when the product no longer exists.
+  const image = product.image ? (
     <SmartImage
       src={product.image}
       alt={product.name}
@@ -25,6 +27,10 @@ export function CartItemRow({ item, onQuantity, onRemove }: CartItemRowProps) {
       frameClassName="size-24 rounded-md sm:size-28"
       className={cn(missing && 'saturate-0 opacity-60')}
     />
+  ) : (
+    <div aria-hidden className="flex size-24 items-center justify-center rounded-md bg-cream text-muted/60 sm:size-28">
+      <ImageOff className="size-6" />
+    </div>
   )
 
   return (

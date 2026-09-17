@@ -15,12 +15,15 @@ export const MAX_QTY = 20
 
 const clampQty = (n: number) => Math.min(MAX_QTY, Math.max(1, Math.trunc(n)))
 
+/** Uploaded product photos are data URLs (hundreds of KB); never persist those in the cart's localStorage. */
+const persistableImage = (url: string) => (url.startsWith('data:') ? '' : url)
+
 function snapshot(product: Product): CartItem['product'] {
   return {
     id: product.id,
     name: product.name,
     price: product.price,
-    image: product.image,
+    image: persistableImage(product.image),
     category: product.category,
     available: product.available,
   }
@@ -83,7 +86,7 @@ function sanitizeItem(raw: unknown): CartItem | null {
       id: typeof product.id === 'string' ? product.id : item.productId,
       name: product.name,
       price: product.price,
-      image: typeof product.image === 'string' ? product.image : '',
+      image: typeof product.image === 'string' ? persistableImage(product.image) : '',
       category: product.category as CartItem['product']['category'],
       available: product.available !== false,
     },

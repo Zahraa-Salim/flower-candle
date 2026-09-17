@@ -37,6 +37,22 @@ export function normalizeSearch(text: string): string {
     .trim()
 }
 
+/** One string per CLDR plural category; `{n}` is replaced by the count (Western digits, as everywhere on the site). */
+export type PluralForms = Record<Intl.LDMLPluralRule, string>
+
+const arabicPlural = new Intl.PluralRules('ar')
+
+/** Arabic-correct count phrase: 0 → zero, 1 → one, 2 → two, 3–10 → few, 11–99 → many, 100/200… → other. */
+export function pluralize(n: number, forms: PluralForms): string {
+  return forms[arabicPlural.select(n)].replace('{n}', String(n))
+}
+
+export const plurals = {
+  product: { zero: 'لا منتجات', one: 'منتج واحد', two: 'منتجان', few: '{n} منتجات', many: '{n} منتجاً', other: '{n} منتج' },
+  piece: { zero: 'لا قطع', one: 'قطعة واحدة', two: 'قطعتان', few: '{n} قطع', many: '{n} قطعة', other: '{n} قطعة' },
+  image: { zero: 'لا صور', one: 'صورة واحدة', two: 'صورتان', few: '{n} صور', many: '{n} صورة', other: '{n} صورة' },
+} satisfies Record<string, PluralForms>
+
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }

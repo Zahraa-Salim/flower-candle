@@ -18,6 +18,9 @@ export interface UploadOptions {
 
 export const MAX_UPLOAD_BYTES = 12 * 1024 * 1024
 
+/** Product photos render at most ~600px wide in the grid; 1200px keeps 2x density at roughly 150–400KB. */
+export const productUploadOptions: UploadOptions = { maxDimension: 1200, quality: 0.82 }
+
 function loadImage(file: File): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file)
