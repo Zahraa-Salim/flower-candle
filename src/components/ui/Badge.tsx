@@ -4,8 +4,8 @@ import { cn } from '@/lib/utils'
 type Tone = 'rose' | 'sage' | 'neutral' | 'brown' | 'danger'
 
 const tones: Record<Tone, string> = {
-  rose: 'bg-blush text-rose-deep',
-  sage: 'bg-sage-soft text-sage-deep',
+  rose: 'bg-blush text-rose-ink',
+  sage: 'bg-sage-soft text-sage-ink',
   neutral: 'bg-cream text-brown-2',
   brown: 'bg-brown text-ivory',
   danger: 'bg-danger-soft text-danger',

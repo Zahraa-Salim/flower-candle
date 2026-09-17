@@ -27,7 +27,7 @@ function FieldShell({ label, hint, error, required, className, children }: Field
       <label htmlFor={id} className="text-sm font-medium text-brown">
         {label}
         {required && (
-          <span className="text-rose-deep ms-1" aria-hidden>
+          <span className="text-rose-ink ms-1" aria-hidden>
             *
           </span>
         )}
@@ -48,12 +48,13 @@ function FieldShell({ label, hint, error, required, className, children }: Field
 }
 
 export const controlClass =
-  'w-full rounded-md border bg-paper px-3.5 text-brown placeholder:text-muted/70 ' +
+  'w-full rounded-md border bg-paper px-3.5 text-brown placeholder:text-muted ' +
   'transition-[border-color,box-shadow] duration-200 ' +
-  'focus:outline-none focus:border-rose focus:ring-3 focus:ring-rose/15 ' +
+  'focus:outline-none focus:border-rose-ink focus:ring-3 focus:ring-rose/15 ' +
   'disabled:bg-cream disabled:text-muted disabled:cursor-not-allowed'
 
-const okBorder = 'border-line hover:border-brown/25'
+// line-strong (3.5:1 on paper) so the control boundary itself passes WCAG 1.4.11.
+const okBorder = 'border-line-strong hover:border-muted'
 const errBorder = 'border-danger focus:border-danger focus:ring-danger/15'
 
 type InputFieldProps = Omit<FieldShellProps, 'children'> & InputHTMLAttributes<HTMLInputElement>
@@ -122,7 +123,7 @@ export const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(funct
           className={cn(controlClass, 'h-11 appearance-none bg-no-repeat pe-10', invalid ? errBorder : okBorder)}
           style={{
             backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%237B706A' stroke-width='1.5' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
+              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23726761' stroke-width='1.5' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
             backgroundPosition: 'left 0.875rem center',
           }}
           {...rest}
@@ -171,7 +172,8 @@ export function Switch({
           // Invisible 44px hit area around the 28px track (touch target), without changing the visual.
           "before:absolute before:-inset-2 before:content-['']",
           'disabled:opacity-50 disabled:cursor-not-allowed',
-          checked ? 'bg-sage border-sage' : 'bg-cream border-line',
+          // Track colours clear 3:1 against paper in both states (sage-ink 5.5, line-strong border 3.5).
+          checked ? 'bg-sage-ink border-sage-ink' : 'bg-cream border-line-strong',
         )}
       >
         <span

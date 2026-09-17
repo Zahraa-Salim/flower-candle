@@ -121,7 +121,7 @@ export default function AdminProductsPage() {
             aria-label="التصنيف"
             value={category}
             onChange={(e) => setCategory(e.target.value as CategoryId | 'all')}
-            className="h-10 shrink-0 rounded-md border border-line bg-paper px-3 text-sm text-brown focus:border-rose focus:outline-none focus:ring-3 focus:ring-rose/15"
+            className="h-11 shrink-0 rounded-md border border-line-strong bg-paper px-3 text-sm text-brown focus:border-rose-ink focus:outline-none focus:ring-3 focus:ring-rose/15"
           >
             <option value="all">كل التصنيفات</option>
             {categories.map((c) => (
@@ -130,7 +130,7 @@ export default function AdminProductsPage() {
               </option>
             ))}
           </select>
-          <div role="group" aria-label="التوفر" className="flex shrink-0 rounded-md border border-line bg-paper p-0.5">
+          <div role="group" aria-label="التوفر" className="flex shrink-0 rounded-md border border-line-strong bg-paper p-0.5">
             {availabilityOptions.map((o) => (
               <button
                 key={o.value}
@@ -138,7 +138,7 @@ export default function AdminProductsPage() {
                 aria-pressed={availability === o.value}
                 onClick={() => setAvailability(o.value)}
                 className={cn(
-                  'h-9 rounded-sm px-3 text-sm transition-colors',
+                  'h-10 rounded-sm px-3 text-sm transition-colors',
                   availability === o.value ? 'bg-brown text-ivory' : 'text-brown-2 hover:text-brown',
                 )}
               >
@@ -237,7 +237,7 @@ export default function AdminProductsPage() {
                         aria-label={p.featured ? `إزالة ${p.name} من المميز` : `تمييز ${p.name}`}
                         className={cn(
                           'inline-flex size-11 items-center justify-center rounded-md transition-colors',
-                          p.featured ? 'text-rose-deep hover:bg-blush' : 'text-muted hover:bg-cream hover:text-brown',
+                          p.featured ? 'text-rose-ink hover:bg-blush' : 'text-muted hover:bg-cream hover:text-brown',
                         )}
                       >
                         <Star className={cn('size-[18px]', p.featured && 'fill-current')} aria-hidden />
@@ -257,7 +257,7 @@ export default function AdminProductsPage() {
                         title={p.isCategoryCover ? 'غلاف التصنيف على الصفحة الرئيسية' : 'جعله غلاف التصنيف'}
                         className={cn(
                           'inline-flex size-11 items-center justify-center rounded-md transition-colors',
-                          p.isCategoryCover ? 'bg-blush text-rose-deep' : 'text-muted hover:bg-cream hover:text-brown',
+                          p.isCategoryCover ? 'bg-blush text-rose-ink' : 'text-muted hover:bg-cream hover:text-brown',
                         )}
                       >
                         <ImageIcon className="size-[18px]" aria-hidden />
@@ -319,7 +319,7 @@ export default function AdminProductsPage() {
                       disabled={pending.has(p.id)}
                       aria-pressed={p.featured}
                       aria-label={p.featured ? `إزالة ${p.name} من المميز` : `تمييز ${p.name}`}
-                      className={cn('inline-flex size-11 items-center justify-center rounded-md', p.featured ? 'text-rose-deep' : 'text-muted')}
+                      className={cn('inline-flex size-11 items-center justify-center rounded-md', p.featured ? 'text-rose-ink' : 'text-muted')}
                     >
                       <Star className={cn('size-[18px]', p.featured && 'fill-current')} aria-hidden />
                     </button>
@@ -333,7 +333,7 @@ export default function AdminProductsPage() {
                           ? `إزالة ${p.name} كغلاف للتصنيف`
                           : `جعل ${p.name} غلاف تصنيف ${categoryName(p.category)}`
                       }
-                      className={cn('inline-flex size-11 items-center justify-center rounded-md', p.isCategoryCover ? 'bg-blush text-rose-deep' : 'text-muted')}
+                      className={cn('inline-flex size-11 items-center justify-center rounded-md', p.isCategoryCover ? 'bg-blush text-rose-ink' : 'text-muted')}
                     >
                       <ImageIcon className="size-[18px]" aria-hidden />
                     </button>

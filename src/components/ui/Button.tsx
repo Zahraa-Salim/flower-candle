@@ -8,16 +8,18 @@ export type ButtonSize = 'sm' | 'md' | 'lg'
 
 const base =
   'inline-flex items-center justify-center gap-2 rounded-md font-medium select-none whitespace-nowrap ' +
-  'transition-[background-color,color,border-color,transform,box-shadow] duration-200 ease-(--ease-soft) ' +
+  'transition-[background-color,color,border-color,transform,box-shadow,filter] duration-200 ease-(--ease-soft) ' +
   'active:scale-[0.985] disabled:opacity-50 disabled:pointer-events-none disabled:active:scale-100'
 
+// Contrast (WCAG AA): the light sage / muted-rose fills keep the brief's palette, so they carry
+// the darkest brown as text (5.08 and 5.65 against the fills) instead of white (2.25 / 2.55).
 const variants: Record<ButtonVariant, string> = {
   primary: 'bg-brown text-ivory hover:bg-brown-2',
-  secondary: 'bg-rose text-paper hover:bg-rose-deep',
-  outline: 'border border-brown/25 text-brown bg-transparent hover:bg-brown/5 hover:border-brown/40',
+  secondary: 'bg-rose-soft text-brown hover:brightness-95',
+  outline: 'border border-line-strong text-brown bg-transparent hover:bg-brown/5 hover:border-brown-2',
   ghost: 'text-brown hover:bg-brown/5',
   danger: 'bg-danger-soft text-danger hover:bg-danger hover:text-paper',
-  whatsapp: 'bg-sage text-paper hover:bg-sage-deep',
+  whatsapp: 'bg-sage text-brown hover:brightness-95',
 }
 
 const sizes: Record<ButtonSize, string> = {

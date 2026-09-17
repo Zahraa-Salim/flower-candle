@@ -71,10 +71,10 @@ export function SortSelect({
         id={id}
         value={value}
         onChange={(e) => onChange(e.target.value as SortOption)}
-        className={cn(controlClass, 'h-10 border-line pe-9 text-sm appearance-none bg-no-repeat')}
+        className={cn(controlClass, 'h-11 border-line-strong pe-9 text-sm appearance-none bg-no-repeat')}
         style={{
           backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%237B706A' stroke-width='1.5' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
+            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23726761' stroke-width='1.5' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
           backgroundPosition: 'left 0.75rem center',
         }}
       >
@@ -148,7 +148,7 @@ export function FilterPanel({ filters, maxPriceBound, onChange, onReset }: Filte
         </div>
       </div>
 
-      <button type="button" onClick={onReset} className="self-start text-sm text-rose-deep underline-offset-4 hover:underline">
+      <button type="button" onClick={onReset} className="inline-flex min-h-11 items-center self-start text-sm text-rose-ink underline-offset-4 hover:underline">
         إعادة ضبط الفلاتر
       </button>
     </div>

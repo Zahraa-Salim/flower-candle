@@ -204,7 +204,7 @@ export default function ProductDetailsPage() {
                     aria-pressed={activeImage === i}
                     className={cn(
                       'block overflow-hidden rounded-sm border-2 transition-colors',
-                      activeImage === i ? 'border-rose' : 'border-transparent hover:border-line',
+                      activeImage === i ? 'border-rose-ink' : 'border-transparent hover:border-line-strong',
                     )}
                   >
                     <SmartImage src={src} alt="" sizes="88px" frameClassName="size-16 sm:size-20" />
@@ -218,7 +218,7 @@ export default function ProductDetailsPage() {
         {/* Info */}
         <div className="lg:col-span-5">
           <div className="flex flex-wrap items-center gap-2">
-            <Link to={`/products?category=${product.category}`} className="text-sm text-rose-deep hover:underline">
+            <Link to={`/products?category=${product.category}`} className="text-sm text-rose-ink hover:underline">
               {categoryName(product.category)}
             </Link>
             {product.isNew && <Badge tone="rose">جديد</Badge>}
@@ -257,7 +257,7 @@ export default function ProductDetailsPage() {
             {inCart > 0 && (
               <p className="text-sm text-muted">
                 لديك <span className="num">{inCart}</span> من هذا المنتج في{' '}
-                <Link to="/cart" className="text-rose-deep underline-offset-4 hover:underline">
+                <Link to="/cart" className="text-rose-ink underline-offset-4 hover:underline">
                   السلة
                 </Link>
                 {atLimit ? '، وهو الحد الأقصى.' : '.'}

@@ -9,15 +9,20 @@
   --color-rose: #c99491;
   --color-rose-deep: #b57f7c;
   --color-rose-soft: #d9aaa5;
+  /* "ink" tokens: text/icon colours that reach WCAG AA on the tinted surfaces (blush, sage-soft) and on ivory/cream/paper. */
+  --color-rose-ink: #964d49;
   --color-sage: #a6af99;
   --color-sage-deep: #8b957e;
   --color-sage-soft: #dfe3d8;
+  --color-sage-ink: #5a6650;
   --color-brown: #403733;
   --color-brown-2: #665a54;
-  --color-muted: #7b706a;
+  --color-muted: #726761;
   --color-line: #e7ddd5;
+  /* Form-control borders only (3:1 against paper); dividers keep --color-line. */
+  --color-line-strong: #8f8783;
   --color-paper: #fffdfc;
-  --color-danger: #b4534e;
+  --color-danger: #a5433e;
   --color-danger-soft: #f7e3e1;
 
   --font-sans: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, system-ui, sans-serif;
@@ -68,7 +73,7 @@
   ::selection { background: var(--color-blush); color: var(--color-brown); }
 
   :focus-visible {
-    outline: 2px solid var(--color-rose);
+    outline: 2px solid var(--color-rose-ink);
     outline-offset: 3px;
     border-radius: 2px;
   }
@@ -94,7 +99,7 @@
   }
 
   .eyebrow {
-    @apply text-sm text-rose-deep font-medium;
+    @apply text-sm text-rose-ink font-medium;
   }
 
   .display {

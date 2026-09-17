@@ -15,7 +15,7 @@ interface EmptyStateProps {
 export function EmptyState({ title, description, action, icon, titleAs: Tag = 'h2', className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center px-4 py-16 text-center sm:py-20', className)}>
-      <div className="mb-5 inline-flex size-14 items-center justify-center rounded-full bg-blush text-rose-deep">
+      <div className="mb-5 inline-flex size-14 items-center justify-center rounded-full bg-blush text-rose-ink">
         {icon ?? <Petal className="size-6" />}
       </div>
       <Tag className="h-sub">{title}</Tag>

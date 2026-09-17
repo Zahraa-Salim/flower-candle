@@ -1,87 +1,85 @@
-# شغف — متجر شموع الورد المصنوعة يدوياً
+# شغف — Handmade Flower-Candle Store
 
-موقع عربي (RTL) لعلامة **شغف**: شموع على شكل ورود وباقات وهدايا مصنوعة يدوياً.
-الطلبات تُرسل عبر واتساب، ولا يوجد دفع إلكتروني أو حسابات عملاء في هذه المرحلة.
+An Arabic, right-to-left storefront for **شغف**, a boutique that makes flower-shaped candles, bouquets, and gifts by hand. Orders go through WhatsApp: there is no online payment and no customer accounts at this stage.
 
-## التشغيل
+## Getting started
 
 ```bash
-cp .env.example .env   # ثم عدّلي القيم (انظري «الإعدادات» أدناه)
+cp .env.example .env   # then edit the values (see "Settings" below)
 npm install
-npm run dev      # http://localhost:5173
-npm run build    # tsc -b && vite build
+npm run dev            # http://localhost:5173
+npm run build          # tsc -b && vite build
 npm run lint
 ```
 
-## الحزم
+## Stack
 
 React 19 · Vite 8 · TypeScript · Tailwind CSS v4 (`@tailwindcss/vite`) · React Router 7 · Lucide React · Framer Motion
 
-## الصفحات
+## Pages
 
-| المسار | الوصف |
+| Route | What it is |
 | --- | --- |
-| `/` | الصفحة الرئيسية |
-| `/products` | المجموعة مع البحث والفلاتر والترتيب (الحالة تُحفظ في الرابط) |
-| `/products/:id` | تفاصيل المنتج، السلة، واتساب، المشاركة |
-| `/about` | قصتنا |
-| `/cart` | السلة وإرسال الطلب عبر واتساب |
-| `/admin/login` | تسجيل دخول الإدارة |
-| `/admin` | لوحة التحكم: الإحصائيات، **صور الواجهة الرئيسية**، أحدث المنتجات |
-| `/admin/products` | إدارة المنتجات (بحث، فلاتر، توفر، مميز، **غلاف التصنيف**، حذف) |
-| `/admin/products/new` · `/admin/products/:id/edit` | نموذج المنتج مع التحقق |
+| `/` | Home page |
+| `/products` | The collection, with search, filters and sorting (state is kept in the URL) |
+| `/products/:id` | Product details, cart, WhatsApp inquiry, share |
+| `/about` | Our story |
+| `/cart` | Cart and "send the order via WhatsApp" |
+| `/admin/login` | Admin sign-in |
+| `/admin` | Dashboard: stats, **home-page hero images**, latest products |
+| `/admin/products` | Product management (search, filters, availability, featured, **category cover**, delete) |
+| `/admin/products/new` · `/admin/products/:id/edit` | Product form with validation |
 
-## الإعدادات (`.env`)
+## Settings (`.env`)
 
-كل ما قد يتغير لاحقاً موجود في ملف `.env` (انسخيه من `.env.example`). القيم تُقرأ في `src/config/site.ts` مع قيم افتراضية إن لم تُضبط.
+Everything an owner might change later lives in `.env` (copy it from `.env.example`). Values are read in `src/config/site.ts`, which supplies defaults for anything left unset.
 
-| المتغير | الوصف |
+| Variable | Meaning |
 | --- | --- |
-| `VITE_BRAND_NAME` · `VITE_TAGLINE` · `VITE_SITE_DESCRIPTION` | اسم العلامة وشعارها ووصفها |
-| `VITE_SITE_URL` | رابط الموقع النهائي |
-| `VITE_WHATSAPP_NUMBER` | رقم واتساب بالصيغة الدولية بدون `+` (مثال `9647701234567`) |
-| `VITE_INSTAGRAM_URL` | رابط إنستغرام؛ اتركيه فارغاً لإخفاء الرابط |
-| `VITE_CURRENCY` | رمز العملة قبل السعر |
-| `VITE_ADMIN_USERNAME` · `VITE_ADMIN_PASSWORD` | بيانات دخول لوحة الإدارة |
+| `VITE_BRAND_NAME` · `VITE_TAGLINE` · `VITE_SITE_DESCRIPTION` | Brand name, tagline and description |
+| `VITE_SITE_URL` | Final public URL of the site (used for canonical and Open Graph tags) |
+| `VITE_WHATSAPP_NUMBER` | WhatsApp number in international format, digits only (e.g. `9647701234567`) |
+| `VITE_INSTAGRAM_URL` | Instagram profile link; leave empty to hide the link |
+| `VITE_CURRENCY` | Currency symbol shown before prices |
+| `VITE_ADMIN_USERNAME` · `VITE_ADMIN_PASSWORD` | Admin sign-in credentials |
 
-ملاحظات:
+Notes:
 
-- علامة `$` داخل أي قيمة يفسّرها Vite كبداية متغير (`$كلمة`)، فاكتبيها كـ `\$` (مثال: `pa\$sword`).
-- `npm run build` يتوقف برسالة واضحة إذا كان `VITE_WHATSAPP_NUMBER` فارغاً أو ليس رقماً من 8 إلى 15 خانة، حتى لا يُنشر الموقع بروابط واتساب معطّلة.
-- العنوان والوصف ووسوم المشاركة في `index.html` تُملأ من هذه القيم وقت البناء.
+- A `$` inside any value is treated by Vite as the start of a variable (`$word`), so write it as `\$` (e.g. `pa\$sword`).
+- `npm run build` stops with a clear message if `VITE_WHATSAPP_NUMBER` is empty or is not 8–15 digits, so the site can never ship with broken WhatsApp links.
+- The title, description and share tags in `index.html` are filled from these values at build time.
+- After editing `.env`, restart `npm run dev` or run `npm run build` again.
 
-> **تنبيه مهم:** Vite يُضمِّن كل متغير يبدأ بـ `VITE_` داخل ملفات JavaScript العامة للموقع، أي أن **كلمة مرور الإدارة قابلة للقراءة من كود الموقع**. هذا مقبول ما دامت لوحة الإدارة تعدّل بيانات محفوظة في متصفح المديرة فقط (انظري «التخزين» أدناه)، لكنه ليس حماية حقيقية. عند ربط قاعدة بيانات فعلية يجب نقل التحقق من كلمة المرور إلى الخادم.
+> **Important:** Vite embeds every variable that starts with `VITE_` into the site's public JavaScript, which means **the admin password can be read from the site's source**. This is acceptable while the admin area only edits data stored in the admin's own browser (see "Storage" below), but it is not real protection. Once a real database is connected, password checks must move to the server.
 
-بعد تعديل `.env` أعيدي تشغيل `npm run dev` أو نفّذي `npm run build` من جديد.
+## Admin area
 
-## لوحة الإدارة
+- **Sign-in:** username and password from `.env`. There are no user accounts; the session lives in `sessionStorage` until the tab is closed.
+- **Hero images:** from the dashboard the admin can upload a replacement for the main or secondary hero photo, or restore the default. Images are resized in the browser (longest edge 1600px, JPEG) before being saved.
+- **Category cover:** every product has a "غلاف التصنيف" switch (in the form and in the product list). The flagged product's photo becomes its category tile on the home page. One product per category; flagging a new one clears the previous one automatically.
 
-- **الدخول:** اسم المستخدم وكلمة المرور من `.env`. لا توجد حسابات مستخدمين؛ الجلسة تُحفظ في `sessionStorage` حتى إغلاق التبويب.
-- **صور الواجهة الرئيسية:** من لوحة التحكم يمكن رفع صورة بديلة للصورة الرئيسية أو الثانوية في الـ Hero، أو استعادة الافتراضية. الصور تُصغَّر في المتصفح (أقصى بُعد 1600px، JPEG) قبل الحفظ.
-- **غلاف التصنيف:** لكل منتج مفتاح «غلاف التصنيف» (في النموذج وفي قائمة المنتجات). صورة المنتج المفعّل تظهر في مربع تصنيفه على الصفحة الرئيسية. منتج واحد فقط لكل تصنيف؛ تفعيل منتج يلغي السابق تلقائياً.
+## Central configuration in code
 
-## الإعدادات المركزية في الكود
+- `src/config/site.ts` — reads `.env` and provides defaults.
+- `src/data/images.ts` — central image registry (temporary Unsplash photos) and the default hero images.
+- `src/data/products.ts` · `src/data/categories.ts` — demo data.
+- `src/styles/index.css` — design tokens (colours, font, shadows) via `@theme`.
 
-- `src/config/site.ts` — يقرأ `.env` ويوفّر القيم الافتراضية.
-- `src/data/images.ts` — سجل الصور المركزي (صور Unsplash مؤقتة) والصور الافتراضية للـ Hero.
-- `src/data/products.ts` · `src/data/categories.ts` — البيانات التجريبية.
-- `src/styles/index.css` — رموز التصميم (الألوان، الخط، الظلال) عبر `@theme`.
+## Data layer and storage
 
-## طبقة البيانات والتخزين
+The UI never imports the demo data directly. Everything goes through interfaces whose implementation can later be swapped for a cloud database (Supabase or similar) without touching any component:
 
-الواجهة لا تستورد البيانات التجريبية مباشرة، بل تمرّ عبر واجهات (interfaces) يمكن استبدال تنفيذها لاحقاً بقاعدة بيانات سحابية (مثل Supabase) دون تعديل أي مكوّن:
-
-| الواجهة | الملف | التنفيذ الحالي |
+| Interface | File | Current implementation |
 | --- | --- | --- |
-| `ProductRepository` | `src/services/products.ts` | يبدأ من البيانات التجريبية ويحفظ التعديلات في `localStorage` |
-| `SiteContentRepository` | `src/services/siteContent.ts` | صور الـ Hero في IndexedDB |
-| `ImageStorage` | `src/services/images.ts` | يُصغّر الصورة ويعيدها كـ data URL |
-| `AuthService` | `src/services/auth.ts` | يقارن ببيانات `.env` |
+| `ProductRepository` | `src/services/products.ts` | Seeds from the demo data, persists admin edits in `localStorage` |
+| `SiteContentRepository` | `src/services/siteContent.ts` | Hero images in IndexedDB |
+| `ImageStorage` | `src/services/images.ts` | Resizes the photo and returns a data URL |
+| `AuthService` | `src/services/auth.ts` | Compares against the `.env` credentials |
 
-> **التخزين حالياً محلي:** تعديلات المنتجات وصور الـ Hero وغلاف التصنيف تُحفظ في متصفح المديرة فقط، ولا تصل إلى الزوار حتى يتم ربط تخزين سحابي. عند الربط: أنشئي تنفيذاً جديداً لكل واجهة أعلاه واستبدلي السطر الأخير في الملف.
+> **Storage is local for now:** product edits, hero photos and category covers are saved in the admin's own browser only. Visitors will not see them until a cloud store is connected. To connect one, write a new implementation of each interface above and replace the last line of the corresponding file.
 
-## السلة
+## Cart
 
-`src/context/CartContext.tsx` — سلة على جهة العميل محفوظة في `localStorage` (`shaghaf:cart:v1`). إضافة المنتج لا تحجز المخزون؛ يتم تأكيد التوفر عبر واتساب.
+`src/context/CartContext.tsx` — a client-side cart persisted in `localStorage` (`shaghaf:cart:v1`). Adding a product does not reserve stock; availability is confirmed over WhatsApp.
 
-صفحة السلة (`src/pages/Cart.tsx`) تُطابق العناصر المحفوظة مع الكتالوج الحي عند العرض: السعر والتوفر يُقرآن من المنتج الحالي، والمنتج المحذوف يظهر كـ«لم يعد متاحاً» ويُستبعد من المجموع ومن رسالة واتساب. الحد الأقصى لكل منتج 20 قطعة.
+The cart page (`src/pages/Cart.tsx`) reconciles the stored items with the live catalogue when it renders: price and availability come from the current product, and a deleted product is shown as "no longer available" and excluded from the total and the WhatsApp message. Maximum 20 of any product.

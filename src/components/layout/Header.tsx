@@ -33,7 +33,7 @@ export function Header() {
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     cn(
       'relative inline-flex h-11 items-center px-1 text-[15px] transition-colors',
-      'after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:origin-center after:scale-x-0 after:bg-rose after:transition-transform after:duration-300',
+      'after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:origin-center after:scale-x-0 after:bg-rose-ink after:transition-transform after:duration-300',
       isActive ? 'text-brown after:scale-x-100' : 'text-brown-2 hover:text-brown hover:after:scale-x-100',
     )
 
@@ -80,7 +80,7 @@ export function Header() {
             >
               <ShoppingBag className="size-5" aria-hidden />
               {count > 0 && (
-                <span className="num absolute top-1 end-1 inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-rose px-1 text-[11px] font-medium leading-none text-paper">
+                <span className="num absolute top-1 end-1 inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-rose-ink px-1 text-[11px] font-medium leading-none text-paper">
                   {count}
                 </span>
               )}

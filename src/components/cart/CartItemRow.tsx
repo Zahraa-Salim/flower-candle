@@ -42,7 +42,7 @@ export function CartItemRow({ item, onQuantity, onRemove }: CartItemRowProps) {
             {missing ? (
               <p className="truncate font-medium text-brown-2">{product.name}</p>
             ) : (
-              <Link to={href} className="block truncate font-medium text-brown hover:text-rose-deep">
+              <Link to={href} className="block truncate font-medium text-brown hover:text-rose-ink">
                 {product.name}
               </Link>
             )}

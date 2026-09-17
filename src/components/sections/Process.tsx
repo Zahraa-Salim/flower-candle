@@ -38,8 +38,8 @@ export function Process() {
           {steps.map(({ n, title, text, Icon }) => (
             <li key={n} className="flex flex-col lg:px-6 lg:first:ps-0 lg:last:pe-0">
               <div className="flex items-center justify-between">
-                <span className="num text-3xl font-light text-rose">{n}</span>
-                <span className="inline-flex size-10 items-center justify-center rounded-full bg-blush text-rose-deep">
+                <span className="num text-3xl font-light text-rose-deep">{n}</span>
+                <span className="inline-flex size-10 items-center justify-center rounded-full bg-blush text-rose-ink">
                   <Icon className="size-[18px]" aria-hidden />
                 </span>
               </div>

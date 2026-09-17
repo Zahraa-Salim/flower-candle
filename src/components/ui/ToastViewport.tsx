@@ -10,8 +10,8 @@ const icons: Record<ToastVariant, typeof Check> = {
 }
 
 const accents: Record<ToastVariant, string> = {
-  success: 'text-sage-deep bg-sage-soft',
-  info: 'text-rose-deep bg-blush',
+  success: 'text-sage-ink bg-sage-soft',
+  info: 'text-rose-ink bg-blush',
   error: 'text-danger bg-danger-soft',
 }
 

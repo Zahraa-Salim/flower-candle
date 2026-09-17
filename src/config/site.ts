@@ -43,6 +43,8 @@ export const storageKeys = {
   products: 'shaghaf:products:v1',
   session: 'shaghaf:admin-session:v1',
   siteContent: 'shaghaf:site-content:v1',
+  /** sessionStorage: timestamp of the last automatic reload after a stale-chunk error. */
+  chunkReload: 'shaghaf:chunk-reload:v1',
 } as const
 
 if (import.meta.env.DEV) {

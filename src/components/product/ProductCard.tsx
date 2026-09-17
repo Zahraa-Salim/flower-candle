@@ -74,7 +74,7 @@ export const ProductCard = memo(function ProductCard({ product, priority }: Prod
           <h3 className="truncate text-[15px] font-medium sm:text-base">
             <Link
               to={href}
-              className="text-brown transition-colors hover:text-rose-deep"
+              className="text-brown transition-colors hover:text-rose-ink"
               aria-label={`${product.name}، ${formatPrice(product.price)}${product.available ? '' : '، غير متوفر حالياً'}`}
             >
               {product.name}

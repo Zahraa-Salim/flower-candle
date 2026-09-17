@@ -29,9 +29,9 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(functi
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={cn(
-          'h-12 w-full rounded-md border border-line bg-paper ps-11 pe-11 text-brown placeholder:text-muted/70',
-          'transition-[border-color,box-shadow] duration-200 hover:border-brown/25',
-          'focus:outline-none focus:border-rose focus:ring-3 focus:ring-rose/15',
+          'h-12 w-full rounded-md border border-line-strong bg-paper ps-11 pe-11 text-brown placeholder:text-muted',
+          'transition-[border-color,box-shadow] duration-200 hover:border-muted',
+          'focus:outline-none focus:border-rose-ink focus:ring-3 focus:ring-rose/15',
           '[&::-webkit-search-cancel-button]:hidden',
         )}
         {...rest}

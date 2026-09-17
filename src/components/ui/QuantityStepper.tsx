@@ -29,7 +29,7 @@ export function QuantityStepper({
     <div
       role="group"
       aria-label={label}
-      className={cn('inline-flex items-center rounded-md border border-line bg-paper', className)}
+      className={cn('inline-flex items-center rounded-md border border-line-strong bg-paper', className)}
     >
       <button type="button" className={btn} onClick={() => onChange(value - 1)} disabled={value <= min} aria-label="تقليل الكمية">
         <Minus className="size-4" aria-hidden />

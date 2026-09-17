@@ -46,7 +46,7 @@ export function BrandStory() {
           />
           <div
             aria-hidden
-            className="absolute -bottom-5 -start-5 flex size-24 items-center justify-center rounded-full border border-rose/40 bg-ivory text-center text-[11px] leading-tight text-rose-deep lg:size-28 lg:text-xs"
+            className="absolute -bottom-5 -start-5 flex size-24 items-center justify-center rounded-full border border-rose/40 bg-ivory text-center text-[11px] leading-tight text-rose-ink lg:size-28 lg:text-xs"
           >
             صُنع
             <br />

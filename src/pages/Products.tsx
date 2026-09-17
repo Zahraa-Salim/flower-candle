@@ -136,7 +136,7 @@ export default function ProductsPage() {
                 >
                   الفلاتر
                   {activeCount > 0 && (
-                    <span className="num inline-flex size-5 items-center justify-center rounded-full bg-rose text-[11px] text-paper">
+                    <span className="num inline-flex size-5 items-center justify-center rounded-full bg-rose-ink text-[11px] text-paper">
                       {activeCount}
                     </span>
                   )}
