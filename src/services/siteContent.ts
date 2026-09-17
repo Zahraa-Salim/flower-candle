@@ -1,0 +1,81 @@
+import type { HeroSlot, SiteContent } from '@/types/site'
+import { defaultHeroImages } from '@/data/images'
+import { storageKeys } from '@/config/site'
+import { idbDelete, idbGet, idbSet } from '@/lib/idb'
+
+/**
+ * Editable site content (today: the hero photographs). The mock keeps it in
+ * IndexedDB because uploaded photos are stored as data URLs, which are too big
+ * for localStorage. Swap for a Supabase-backed repository later.
+ *
+ * Only owner overrides are persisted; defaults are filled in on read, so a
+ * later change to `defaultHeroImages` still reaches browsers with stored data.
+ */
+export interface SiteContentRepository {
+  /** Rejects when storage cannot be read at all (callers fall back to defaults). */
+  get(): Promise<SiteContent>
+  update(patch: Partial<SiteContent>): Promise<SiteContent>
+}
+
+export const defaultSiteContent: SiteContent = {
+  hero: { ...defaultHeroImages },
+}
+
+interface StoredSiteContent {
+  hero?: Partial<Record<HeroSlot, string>>
+}
+
+const SLOTS: HeroSlot[] = ['main', 'detail']
+
+function normalize(raw: unknown): SiteContent {
+  const candidate = (raw && typeof raw === 'object' ? raw : {}) as StoredSiteContent
+  const hero = (candidate.hero && typeof candidate.hero === 'object' ? candidate.hero : {}) as Partial<Record<HeroSlot, string>>
+  return {
+    hero: {
+      main: typeof hero.main === 'string' && hero.main ? hero.main : defaultHeroImages.main,
+      detail: typeof hero.detail === 'string' && hero.detail ? hero.detail : defaultHeroImages.detail,
+    },
+  }
+}
+
+const SAVE_ERROR = 'تعذّر حفظ الصورة في هذا المتصفح. تأكدي من السماح بتخزين بيانات الموقع وتوفر مساحة كافية.'
+
+class LocalSiteContentRepository implements SiteContentRepository {
+  // Writes are serialized so two slots saved at the same time never overwrite each other.
+  private queue: Promise<unknown> = Promise.resolve()
+
+  async get(): Promise<SiteContent> {
+    return normalize(await idbGet<StoredSiteContent>(storageKeys.siteContent))
+  }
+
+  update(patch: Partial<SiteContent>): Promise<SiteContent> {
+    const task = this.queue.then(() => this.write(patch))
+    this.queue = task.catch(() => undefined)
+    return task
+  }
+
+  private async write(patch: Partial<SiteContent>): Promise<SiteContent> {
+    let overrides: Partial<Record<HeroSlot, string>>
+    try {
+      const stored = await idbGet<StoredSiteContent>(storageKeys.siteContent)
+      overrides = { ...(stored?.hero ?? {}) }
+    } catch {
+      throw new Error(SAVE_ERROR)
+    }
+    for (const slot of SLOTS) {
+      const value = patch.hero?.[slot]
+      if (value === undefined) continue
+      if (value === defaultHeroImages[slot] || value === '') delete overrides[slot]
+      else overrides[slot] = value
+    }
+    try {
+      if (Object.keys(overrides).length === 0) await idbDelete(storageKeys.siteContent)
+      else await idbSet(storageKeys.siteContent, { hero: overrides } satisfies StoredSiteContent)
+    } catch {
+      throw new Error(SAVE_ERROR)
+    }
+    return normalize({ hero: overrides })
+  }
+}
+
+export const siteContentRepository: SiteContentRepository = new LocalSiteContentRepository()
