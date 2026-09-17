@@ -3,6 +3,7 @@ import { useBlocker } from 'react-router-dom'
 import { ImageOff, Loader2, Plus, Upload, X } from 'lucide-react'
 import type { CategoryId, Product, ProductInput } from '@/types/product'
 import { categories } from '@/data/categories'
+import { siteConfig } from '@/config/site'
 import { imageStorage, productUploadOptions } from '@/services/images'
 import { useToast } from '@/hooks/useToast'
 import { cn, pluralize, plurals } from '@/lib/utils'
@@ -340,7 +341,9 @@ export function ProductForm({ product, submitting, onSubmit, onCancel }: Product
                 {mainUploaded && <Badge tone="sage">صورة مرفوعة</Badge>}
               </div>
               {mainUploaded ? (
-                <p className="text-xs text-muted">تُصغَّر الصورة إلى 1200px بصيغة JPEG وتُحفظ في هذا المتصفح.</p>
+                <p className="text-xs text-muted">
+                  تُصغَّر الصورة إلى 1200px بصيغة JPEG{siteConfig.dataSource === 'local' ? ' وتُحفظ في هذا المتصفح.' : '.'}
+                </p>
               ) : (
                 <InputField
                   label="أو الصقي رابطاً"

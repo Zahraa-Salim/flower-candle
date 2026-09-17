@@ -1,5 +1,6 @@
 import { siteConfig, storageKeys } from '@/config/site'
 import { sleep } from '@/lib/utils'
+import { api, tokenStore } from './api'
 
 export interface AdminSession {
   username: string
@@ -60,4 +61,44 @@ class EnvAuthService implements AuthService {
   }
 }
 
-export const authService: AuthService = new EnvAuthService()
+/**
+ * API mode: the server checks ADMIN_USERNAME / ADMIN_PASSWORD (never shipped to
+ * the browser) and returns a signed, expiring token stored in sessionStorage.
+ */
+class HttpAuthService implements AuthService {
+  isConfigured(): boolean {
+    return true // the server reports a clear error on login if its credentials are missing
+  }
+
+  getSession(): AdminSession | null {
+    const token = tokenStore.get()
+    if (!token) return null
+    const [payload] = token.split('.')
+    try {
+      const parsed = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))) as { username?: unknown; exp?: unknown }
+      if (typeof parsed.username !== 'string' || typeof parsed.exp !== 'number' || parsed.exp < Date.now()) {
+        tokenStore.clear()
+        return null
+      }
+      return { username: parsed.username, signedInAt: '' }
+    } catch {
+      tokenStore.clear()
+      return null
+    }
+  }
+
+  async signIn(username: string, password: string): Promise<AdminSession> {
+    const { token, username: name } = await api<{ token: string; username: string }>('/auth/login', {
+      method: 'POST',
+      json: { username, password },
+    })
+    tokenStore.set(token)
+    return { username: name, signedInAt: new Date().toISOString() }
+  }
+
+  async signOut(): Promise<void> {
+    tokenStore.clear()
+  }
+}
+
+export const authService: AuthService = siteConfig.dataSource === 'api' ? new HttpAuthService() : new EnvAuthService()

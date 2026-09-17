@@ -1,7 +1,8 @@
 import type { HeroSlot, SiteContent } from '@/types/site'
 import { defaultHeroImages } from '@/data/images'
-import { storageKeys } from '@/config/site'
+import { siteConfig, storageKeys } from '@/config/site'
 import { idbDelete, idbGet, idbSet } from '@/lib/idb'
+import { absoluteApiUrl, api } from './api'
 
 /**
  * Editable site content (today: the hero photographs). The mock keeps it in
@@ -89,4 +90,32 @@ class LocalSiteContentRepository implements SiteContentRepository {
   }
 }
 
-export const siteContentRepository: SiteContentRepository = new LocalSiteContentRepository()
+/** API mode: hero overrides live in the site_content table (server/app.ts). */
+class HttpSiteContentRepository implements SiteContentRepository {
+  private resolve(raw: unknown): SiteContent {
+    const content = normalize(raw)
+    return { hero: { main: absoluteApiUrl(content.hero.main), detail: absoluteApiUrl(content.hero.detail) } }
+  }
+
+  async get(): Promise<SiteContent> {
+    return this.resolve(await api<unknown>('/site-content'))
+  }
+
+  async update(patch: Partial<SiteContent>): Promise<SiteContent> {
+    const hero: Partial<Record<HeroSlot, string>> = {}
+    for (const slot of SLOTS) {
+      const value = patch.hero?.[slot]
+      if (value === undefined) continue
+      // Store '' for "back to default"; the server keeps the key and normalize() fills the default on read.
+      hero[slot] = value === defaultHeroImages[slot] ? '' : value.replace(new RegExp(`^${siteConfig.apiUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`), '')
+    }
+    return this.resolve(await api<unknown>('/site-content', { method: 'PATCH', json: { hero } }))
+  }
+
+  replace(content: SiteContent): Promise<SiteContent> {
+    return this.update({ hero: normalize(content).hero })
+  }
+}
+
+export const siteContentRepository: SiteContentRepository =
+  siteConfig.dataSource === 'api' ? new HttpSiteContentRepository() : new LocalSiteContentRepository()

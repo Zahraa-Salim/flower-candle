@@ -1,9 +1,10 @@
 import type { CategoryId, Product, ProductInput } from '@/types/product'
 import { mockProducts } from '@/data/products'
 import { categories } from '@/data/categories'
-import { storageKeys } from '@/config/site'
+import { siteConfig, storageKeys } from '@/config/site'
 import { idbGet, idbSet } from '@/lib/idb'
 import { sleep, slugify, uid } from '@/lib/utils'
+import { ApiError, absoluteApiUrl, api } from './api'
 
 /**
  * Data access contract. The UI only talks to this interface, so swapping the
@@ -236,8 +237,53 @@ export class MockProductRepository implements ProductRepository {
   }
 }
 
-/**
- * Swap this for a Supabase-backed repository once credentials are available.
- * The rest of the app only depends on the ProductRepository interface.
- */
-export const productRepository: ProductRepository = new MockProductRepository()
+/* ------------------------------------------------------------------ */
+/* API implementation: PostgreSQL through server/app.ts                */
+/* ------------------------------------------------------------------ */
+
+const resolveImages = (p: Product): Product => ({
+  ...p,
+  image: absoluteApiUrl(p.image),
+  images: (p.images ?? []).map(absoluteApiUrl),
+})
+
+export class HttpProductRepository implements ProductRepository {
+  async list(): Promise<Product[]> {
+    const rows = await api<unknown[]>('/products')
+    return rows.map(sanitizeProduct).filter((p): p is Product => p !== null).map(resolveImages)
+  }
+
+  async get(id: string): Promise<Product | null> {
+    try {
+      const row = sanitizeProduct(await api<unknown>(`/products/${encodeURIComponent(id)}`))
+      return row ? resolveImages(row) : null
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 404) return null
+      throw err
+    }
+  }
+
+  async create(input: ProductInput): Promise<Product> {
+    const row = sanitizeProduct(await api<unknown>('/products', { method: 'POST', json: input }))
+    if (!row) throw new Error('استجابة غير متوقعة من الخادم.')
+    return resolveImages(row)
+  }
+
+  async update(id: string, input: Partial<ProductInput>): Promise<Product> {
+    const row = sanitizeProduct(await api<unknown>(`/products/${encodeURIComponent(id)}`, { method: 'PATCH', json: input }))
+    if (!row) throw new Error('استجابة غير متوقعة من الخادم.')
+    return resolveImages(row)
+  }
+
+  async remove(id: string): Promise<void> {
+    await api<void>(`/products/${encodeURIComponent(id)}`, { method: 'DELETE' })
+  }
+
+  async replaceAll(products: Product[]): Promise<void> {
+    await api<{ count: number }>('/products', { method: 'PUT', json: { products } })
+  }
+}
+
+/** Selected by VITE_DATA_SOURCE: 'api' (PostgreSQL, default) or 'local' (browser-only demo). */
+export const productRepository: ProductRepository =
+  siteConfig.dataSource === 'api' ? new HttpProductRepository() : new MockProductRepository()

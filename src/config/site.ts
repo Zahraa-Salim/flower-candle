@@ -31,7 +31,11 @@ export const siteConfig = {
     /** Empty string hides the Instagram links. */
     instagram: read(env.VITE_INSTAGRAM_URL),
   },
-  /** Single admin login; both values must be set in `.env` for the admin area to be usable. */
+  /** Where data lives: the PostgreSQL API (default) or the browser-only demo storage. */
+  dataSource: (read(env.VITE_DATA_SOURCE, 'api') === 'local' ? 'local' : 'api') as 'api' | 'local',
+  /** API origin when served separately from the site; empty means same origin. */
+  apiUrl: read(env.VITE_API_URL).replace(/\/+$/, ''),
+  /** Browser-only demo login (VITE_DATA_SOURCE=local). With the API, credentials live on the server. */
   admin: {
     username: read(env.VITE_ADMIN_USERNAME),
     password: env.VITE_ADMIN_PASSWORD ?? '',
@@ -48,10 +52,11 @@ export const storageKeys = {
 } as const
 
 if (import.meta.env.DEV) {
+  const localMode = siteConfig.dataSource === 'local'
   const missing = [
     !siteConfig.whatsappNumber && 'VITE_WHATSAPP_NUMBER',
-    !siteConfig.admin.username && 'VITE_ADMIN_USERNAME',
-    !siteConfig.admin.password && 'VITE_ADMIN_PASSWORD',
+    localMode && !siteConfig.admin.username && 'VITE_ADMIN_USERNAME',
+    localMode && !siteConfig.admin.password && 'VITE_ADMIN_PASSWORD',
   ].filter(Boolean)
   if (missing.length > 0) {
     console.warn(`[شغف] متغيرات .env غير مضبوطة: ${missing.join(', ')} — انظري .env.example`)

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { RotateCcw, Upload } from 'lucide-react'
 import type { HeroSlot } from '@/types/site'
+import { siteConfig } from '@/config/site'
 import { useSiteContent } from '@/hooks/useSiteContent'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/Button'
@@ -92,7 +93,10 @@ export function HeroImagesEditor() {
           <h2 id="hero-images-title" className="text-lg font-medium text-brown">
             صور الواجهة الرئيسية
           </h2>
-          <p className="mt-0.5 text-xs text-muted">تُصغَّر الصور تلقائياً عند الرفع. تُحفظ في هذا المتصفح حتى يتم ربط التخزين السحابي.</p>
+          <p className="mt-0.5 text-xs text-muted">
+            تُصغَّر الصور تلقائياً عند الرفع.
+            {siteConfig.dataSource === 'local' ? ' تُحفظ في هذا المتصفح فقط (الوضع التجريبي).' : ' تظهر للزوار فور الحفظ.'}
+          </p>
         </div>
       </div>
       <ul className="mt-3 grid gap-3 lg:grid-cols-2">

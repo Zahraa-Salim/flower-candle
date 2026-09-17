@@ -9,6 +9,11 @@ interface ImportMetaEnv {
   readonly VITE_WHATSAPP_NUMBER?: string
   readonly VITE_INSTAGRAM_URL?: string
   readonly VITE_CURRENCY?: string
+  /** 'api' (PostgreSQL through the server, default) or 'local' (browser-only demo storage). */
+  readonly VITE_DATA_SOURCE?: string
+  /** Origin of the API when it is not served with the site (e.g. https://api.example.com). Empty = same origin. */
+  readonly VITE_API_URL?: string
+  /** Only used when VITE_DATA_SOURCE=local (browser-only demo). */
   readonly VITE_ADMIN_USERNAME?: string
   readonly VITE_ADMIN_PASSWORD?: string
 }

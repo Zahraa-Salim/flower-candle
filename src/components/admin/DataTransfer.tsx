@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { Download, Upload } from 'lucide-react'
+import { siteConfig } from '@/config/site'
 import { useProducts } from '@/hooks/useProducts'
 import { useSiteContent } from '@/hooks/useSiteContent'
 import { useToast } from '@/hooks/useToast'
@@ -58,8 +59,10 @@ export function DataTransfer() {
         النسخ الاحتياطي
       </h2>
       <p className="mt-1 max-w-prose text-xs leading-relaxed text-muted">
-        البيانات محفوظة في هذا المتصفح فقط. صدّري نسخة قبل مسح بيانات الموقع أو لنقلها إلى جهاز آخر. الاستيراد يستبدل
-        كل المنتجات وصور الواجهة.
+        {siteConfig.dataSource === 'local'
+          ? 'البيانات محفوظة في هذا المتصفح فقط. صدّري نسخة قبل مسح بيانات الموقع أو لنقلها إلى جهاز آخر. '
+          : 'صدّري نسخة من الكتالوج وصور الواجهة للاحتفاظ بها أو لنقلها إلى قاعدة بيانات أخرى. '}
+        الاستيراد يستبدل كل المنتجات وصور الواجهة.
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
         <Button

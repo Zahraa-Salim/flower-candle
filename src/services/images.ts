@@ -1,9 +1,11 @@
+import { siteConfig } from '@/config/site'
+import { absoluteApiUrl, api } from './api'
+
 /**
  * Image storage contract. `upload` returns a URL that can be used directly as an
- * <img src>. The current implementation keeps everything in the browser: it
- * resizes the photo on a canvas and returns a JPEG data URL, which the site
- * content / product stores persist locally. Replace with a Supabase Storage
- * (or any CDN) adapter later; callers only depend on this interface.
+ * <img src>. Both implementations resize the photo on a canvas first (JPEG,
+ * longest edge capped); the local one returns a data URL kept in the browser,
+ * the API one stores the bytes in PostgreSQL and returns /api/images/<id>.
  */
 export interface ImageStorage {
   upload(file: File, options?: UploadOptions): Promise<string>
@@ -63,5 +65,15 @@ class LocalImageStorage implements ImageStorage {
   }
 }
 
-/** Swap for a Supabase Storage adapter later. */
-export const imageStorage: ImageStorage = new LocalImageStorage()
+/** API mode: resize in the browser (same as local), then store the bytes in the images table and return /api/images/<id>. */
+class HttpImageStorage implements ImageStorage {
+  private local = new LocalImageStorage()
+
+  async upload(file: File, options?: UploadOptions): Promise<string> {
+    const dataUrl = await this.local.upload(file, options)
+    const { url } = await api<{ url: string }>('/images', { method: 'POST', json: { dataUrl } })
+    return absoluteApiUrl(url)
+  }
+}
+
+export const imageStorage: ImageStorage = siteConfig.dataSource === 'api' ? new HttpImageStorage() : new LocalImageStorage()

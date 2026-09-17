@@ -2,8 +2,13 @@ import { fileURLToPath, URL } from 'node:url'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
-// Explicit extension: Vite's future native config loader requires it.
+import { getRequestListener } from '@hono/node-server'
+// Explicit extensions: Vite's future native config loader requires them.
 import { mockProducts } from './src/data/products.ts'
+import { createApp } from './server/app.ts'
+
+/** Server-only variables the dev API bridge needs (never exposed to the client bundle). */
+const SERVER_ENV = ['DATABASE_URL', 'ADMIN_USERNAME', 'ADMIN_PASSWORD', 'AUTH_SECRET', 'CORS_ORIGIN'] as const
 
 /** Trimmed env value, or the fallback when unset/blank (mirrors src/config/site.ts). */
 const read = (value: string | undefined, fallback = ''): string => (value ?? '').trim() || fallback
@@ -81,8 +86,30 @@ export default defineConfig(({ mode, command }) => {
     },
   }
 
+  /**
+   * Dev bridge: runs the same API (server/app.ts) inside the Vite dev server at /api,
+   * so `npm run dev` needs no second process. Skipped when VITE_DATA_SOURCE=local.
+   */
+  const devApi: Plugin = {
+    name: 'shaghaf:dev-api',
+    apply: 'serve',
+    configureServer(server) {
+      if (read(env.VITE_DATA_SOURCE, 'api') === 'local') return
+      const all = loadEnv(mode, process.cwd(), '')
+      for (const key of SERVER_ENV) if (all[key] !== undefined && process.env[key] === undefined) process.env[key] = all[key]
+      if (!process.env.DATABASE_URL) {
+        server.config.logger.warn('[شغف] DATABASE_URL is not set: /api requests will fail. Set it in .env or use VITE_DATA_SOURCE=local.')
+      }
+      const listener = getRequestListener(createApp().fetch)
+      server.middlewares.use((req, res, next) => {
+        if (req.url?.startsWith('/api/')) return void listener(req, res)
+        next()
+      })
+    },
+  }
+
   return {
-    plugins: [react(), tailwindcss(), htmlEnv, seoFiles],
+    plugins: [react(), tailwindcss(), htmlEnv, seoFiles, devApi],
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),

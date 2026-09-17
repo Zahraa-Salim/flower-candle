@@ -20,8 +20,15 @@ export default defineConfig([
     },
   },
   {
-    // Node-side files: the Vite config and the manual scripts (e.g. the og.jpg generator).
-    files: ['vite.config.ts', 'scripts/**/*.{js,mjs}'],
+    // Node-side TypeScript (API server, Vite config): same rules, Node globals.
+    files: ['vite.config.ts', 'server/**/*.ts'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+  {
+    // Plain-JS manual scripts (e.g. the og.jpg generator, db-apply).
+    files: ['scripts/**/*.{js,mjs}'],
     extends: [js.configs.recommended],
     languageOptions: {
       globals: globals.node,

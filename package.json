@@ -7,11 +7,20 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "node --env-file-if-exists=.env server/index.ts",
+    "db:setup": "node scripts/db-apply.mjs db/schema.sql db/seed.sql",
+    "db:seed": "node scripts/db-apply.mjs db/seed.sql"
+  },
+  "engines": {
+    "node": ">=22.18"
   },
   "dependencies": {
+    "@hono/node-server": "^2.1.1",
     "framer-motion": "^13.4.0",
+    "hono": "^4.13.8",
     "lucide-react": "^1.46.0",
+    "pg": "^8.23.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.4"
@@ -20,6 +29,7 @@
     "@eslint/js": "^10.0.1",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.13.3",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
