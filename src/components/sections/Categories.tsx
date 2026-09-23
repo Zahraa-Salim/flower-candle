@@ -5,13 +5,21 @@ import { cn } from '@/lib/utils'
 import { useProducts } from '@/hooks/useProducts'
 import { SmartImage } from '@/components/ui/SmartImage'
 
-/* Asymmetric layout: the first tile is tall, the last one wide. */
-const spans = [
-  'lg:col-span-2 lg:row-span-2 aspect-[4/5] lg:aspect-auto',
-  'aspect-[4/5] lg:aspect-[4/3]',
-  'aspect-[4/5] lg:aspect-[4/3]',
-  'col-span-2 aspect-[16/9] lg:col-span-2 lg:aspect-auto',
-]
+/*
+ * Asymmetric mosaic with no holes: the first tile is tall, the last one wide.
+ *   phones / tablets (2 columns, 3 rows)     desktop (4 columns, 2 rows)
+ *   ┌─────┬─────┐                            ┌──────────┬─────┬─────┐
+ *   │  1  │  2  │                            │          │  2  │  3  │
+ *   │     ├─────┤                            │    1     ├─────┴─────┤
+ *   │     │  3  │                            │          │     4     │
+ *   ├─────┴─────┤                            └──────────┴───────────┘
+ *   │     4     │
+ *   └───────────┘
+ * The grid itself carries a fixed aspect ratio, so its rows have a definite
+ * height and every tile simply fills its cell. The photo's own proportions can
+ * never change the layout (object-fit: cover inside an absolute frame).
+ */
+const spans = ['row-span-2 lg:col-span-2', '', '', 'col-span-2']
 
 export function Categories() {
   const { products, status } = useProducts()
@@ -25,12 +33,12 @@ export function Categories() {
         <h2 id="categories-title" className="sr-only">
           التصنيفات
         </h2>
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:grid-rows-2 lg:gap-5">
+        <div className="grid aspect-[3/4] grid-cols-2 grid-rows-3 gap-3 sm:gap-4 lg:aspect-[8/3] lg:grid-cols-4 lg:grid-rows-2 lg:gap-5">
           {categories.map((c, i) => (
             <Link
               key={c.id}
               to={`/products?category=${c.id}`}
-              className={cn('group relative block overflow-hidden rounded-md', spans[i] ?? 'aspect-[4/5]')}
+              className={cn('group relative block min-h-0 overflow-hidden rounded-md', spans[i])}
               aria-label={`تصفحي ${c.name}`}
             >
               {loading ? (
