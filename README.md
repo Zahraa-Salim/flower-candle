@@ -73,6 +73,8 @@ Notes:
 - `db/seed.sql` — the demo catalogue, identical to `src/data/products.ts`. Upserts by id, so re-running restores the demo values without duplicating rows.
 - `npm run db:setup` applies both; `npm run db:seed` only the seed. No `psql` needed (`scripts/db-apply.mjs` uses the `pg` driver). You can also paste the files into Neon's SQL editor.
 - Categories are fixed in the app (`src/data/categories.ts`) and mirrored in the table for referential integrity.
+- Uploaded photos that nothing references any more (removed from a product, replaced hero image, deleted product, upload from a form that was never saved) are pruned automatically: the production server sweeps at start-up and once a day, and after every product or hero change. Photos younger than 48 hours are always kept so an open product form can still save them. To sweep by hand: `npm run db:prune-images` (`-- --dry-run` only lists, `-- --hours N` changes the grace period).
+- `sitemap.xml` is generated from the `products` table on every request (`server/sitemap.ts`), so products added in the dashboard appear without a rebuild. It needs `VITE_SITE_URL`; without it the server falls back to the request origin and logs a warning.
 
 ## API (`server/`)
 
@@ -86,7 +88,7 @@ Notes:
 | `GET /api/site-content` · `PATCH /api/site-content` | Bearer for PATCH | Hero image overrides |
 | `POST /api/images` · `GET /api/images/:id` | Bearer for POST | Photo upload (data URL, max 12 MB) and delivery with immutable caching |
 
-`server/app.ts` is the Hono app; `server/index.ts` serves it together with `dist/` (SPA fallback included); `vite.config.ts` mounts the same app at `/api` during `npm run dev`.
+`server/app.ts` is the Hono app; `server/index.ts` serves it together with `dist/` (SPA fallback included, long-lived caching for `/assets` and `/fonts`) and generates `/sitemap.xml` from the database; `vite.config.ts` mounts the same app at `/api` during `npm run dev`. The server retries a query once when the hosted database dropped an idle connection (Neon wakes a suspended compute on first contact), so the first request after a quiet period no longer fails.
 
 ## Admin area
 

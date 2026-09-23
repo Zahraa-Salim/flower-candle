@@ -2,8 +2,9 @@ import type { Product } from '@/types/product'
 import { images } from './images.ts' // explicit extension: this file is also imported by vite.config.ts
 
 /**
- * Demo catalogue. This is the seed for the mock repository and will be replaced
- * by Supabase rows later; the UI never imports this file directly.
+ * Demo catalogue, kept identical to db/seed.sql. It seeds the browser-only demo
+ * mode (VITE_DATA_SOURCE=local); in the default API mode the real catalogue lives
+ * in PostgreSQL. The UI never imports this file directly.
  */
 export const mockProducts: Product[] = [
   {

@@ -5,9 +5,10 @@ import { idbDelete, idbGet, idbSet } from '@/lib/idb'
 import { absoluteApiUrl, api } from './api'
 
 /**
- * Editable site content (today: the hero photographs). The mock keeps it in
- * IndexedDB because uploaded photos are stored as data URLs, which are too big
- * for localStorage. Swap for a Supabase-backed repository later.
+ * Editable site content (today: the hero photographs). `HttpSiteContentRepository`
+ * (default) stores it in the site_content table through server/app.ts; the
+ * browser-only demo keeps it in IndexedDB because uploaded photos are data URLs,
+ * too big for localStorage.
  *
  * Only owner overrides are persisted; defaults are filled in on read, so a
  * later change to `defaultHeroImages` still reaches browsers with stored data.

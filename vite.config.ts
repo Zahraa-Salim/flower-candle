@@ -6,6 +6,7 @@ import { getRequestListener } from '@hono/node-server'
 // Explicit extensions: Vite's future native config loader requires them.
 import { mockProducts } from './src/data/products.ts'
 import { createApp } from './server/app.ts'
+import { buildSitemapXml, escapeXml as escapeHtml, listSitemapEntries } from './server/sitemap.ts'
 
 /** Server-only variables the dev API bridge needs (never exposed to the client bundle). */
 const SERVER_ENV = ['DATABASE_URL', 'ADMIN_USERNAME', 'ADMIN_PASSWORD', 'AUTH_SECRET', 'CORS_ORIGIN'] as const
@@ -13,12 +14,16 @@ const SERVER_ENV = ['DATABASE_URL', 'ADMIN_USERNAME', 'ADMIN_PASSWORD', 'AUTH_SE
 /** Trimmed env value, or the fallback when unset/blank (mirrors src/config/site.ts). */
 const read = (value: string | undefined, fallback = ''): string => (value ?? '').trim() || fallback
 
-const escapeHtml = (s: string) =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-
 // https://vite.dev/config/
 export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_')
+  const localData = read(env.VITE_DATA_SOURCE, 'api') === 'local'
+
+  /** Copies the server-only .env values into process.env for the dev API and sitemap (idempotent). */
+  const loadServerEnv = () => {
+    const all = loadEnv(mode, process.cwd(), '')
+    for (const key of SERVER_ENV) if (all[key] !== undefined && process.env[key] === undefined) process.env[key] = all[key]
+  }
   const brand = read(env.VITE_BRAND_NAME, 'شغف')
   const description = read(
     env.VITE_SITE_DESCRIPTION,
@@ -46,30 +51,29 @@ export default defineConfig(({ mode, command }) => {
   }
 
   /**
-   * robots.txt and sitemap.xml need the absolute site URL, so they are generated
-   * here (emitted into dist/ on build, served by middleware in dev) instead of
-   * living as static files in public/.
+   * robots.txt needs the absolute site URL, so it is generated here (emitted into
+   * dist/ on build, served by middleware in dev) instead of living in public/.
+   * sitemap.xml is built from the database at request time (server/sitemap.ts):
+   * by server/index.ts in production and by the middleware below in dev, where
+   * the browser-only demo mode (VITE_DATA_SOURCE=local) lists the demo catalogue.
    */
   const robotsTxt = () => ['User-agent: *', 'Disallow: /admin', 'Disallow: /cart', `Sitemap: ${siteUrl}/sitemap.xml`, ''].join('\n')
-  const sitemapXml = () => {
-    const urls: { loc: string; lastmod?: string }[] = [
-      { loc: '/' },
-      { loc: '/products' },
-      { loc: '/about' },
-      ...mockProducts.map((p) => ({ loc: `/products/${encodeURI(p.id)}`, lastmod: p.createdAt.slice(0, 10) })),
-    ]
-    const entries = urls.map(
-      (u) => `  <url><loc>${escapeHtml(siteUrl + u.loc)}</loc>${u.lastmod ? `<lastmod>${u.lastmod}</lastmod>` : ''}</url>`,
-    )
-    return ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">', ...entries, '</urlset>', ''].join('\n')
+  const sitemapXml = async () => {
+    if (localData) return buildSitemapXml(siteUrl, mockProducts.map((p) => ({ id: p.id, lastmod: p.createdAt })))
+    try {
+      return buildSitemapXml(siteUrl, await listSitemapEntries())
+    } catch (err) {
+      console.warn('[شغف] sitemap: database unavailable, serving static pages only:', (err as Error).message)
+      return buildSitemapXml(siteUrl, [])
+    }
   }
   const seoFiles: Plugin = {
     name: 'shaghaf:seo-files',
     generateBundle() {
       this.emitFile({ type: 'asset', fileName: 'robots.txt', source: robotsTxt() })
-      this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: sitemapXml() })
     },
     configureServer(server) {
+      loadServerEnv()
       server.middlewares.use((req, res, next) => {
         if (req.url === '/robots.txt') {
           res.setHeader('Content-Type', 'text/plain; charset=utf-8')
@@ -77,8 +81,10 @@ export default defineConfig(({ mode, command }) => {
           return
         }
         if (req.url === '/sitemap.xml') {
-          res.setHeader('Content-Type', 'application/xml; charset=utf-8')
-          res.end(sitemapXml())
+          void sitemapXml().then((xml) => {
+            res.setHeader('Content-Type', 'application/xml; charset=utf-8')
+            res.end(xml)
+          })
           return
         }
         next()
@@ -94,9 +100,8 @@ export default defineConfig(({ mode, command }) => {
     name: 'shaghaf:dev-api',
     apply: 'serve',
     configureServer(server) {
-      if (read(env.VITE_DATA_SOURCE, 'api') === 'local') return
-      const all = loadEnv(mode, process.cwd(), '')
-      for (const key of SERVER_ENV) if (all[key] !== undefined && process.env[key] === undefined) process.env[key] = all[key]
+      if (localData) return
+      loadServerEnv()
       if (!process.env.DATABASE_URL) {
         server.config.logger.warn('[شغف] DATABASE_URL is not set: /api requests will fail. Set it in .env or use VITE_DATA_SOURCE=local.')
       }

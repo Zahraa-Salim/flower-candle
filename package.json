@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "start": "node --env-file-if-exists=.env server/index.ts",
     "db:setup": "node scripts/db-apply.mjs db/schema.sql db/seed.sql",
-    "db:seed": "node scripts/db-apply.mjs db/seed.sql"
+    "db:seed": "node scripts/db-apply.mjs db/seed.sql",
+    "db:prune-images": "node scripts/db-prune-images.mjs"
   },
   "engines": {
     "node": ">=22.18"

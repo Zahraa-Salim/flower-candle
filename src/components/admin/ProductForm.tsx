@@ -56,7 +56,9 @@ function toValues(product?: Product): FormValues {
   }
 }
 
-const isUploaded = (value: string) => /^data:image\/(jpeg|png|webp|gif);base64,/.test(value)
+/** A photo that came through imageStorage.upload: a data URL (browser-only demo) or a stored /api/images/<id> (API mode). */
+const isUploaded = (value: string) =>
+  /^data:image\/(jpeg|png|webp|gif);base64,/.test(value) || /\/api\/images\/[0-9a-f-]{36}$/i.test(value)
 
 function isValidImageUrl(value: string): boolean {
   const v = value.trim()

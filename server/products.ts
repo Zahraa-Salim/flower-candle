@@ -1,5 +1,5 @@
 import type pg from 'pg'
-import { getPool, withTransaction, type Queryable } from './db.ts'
+import { query, withTransaction, type Queryable } from './db.ts'
 
 /** Wire shape returned to the client (matches src/types/product.ts `Product`). */
 export interface ProductRow {
@@ -130,13 +130,17 @@ export function slugify(input: string): string {
     .replace(/[^\p{L}\p{N}-]+/gu, '')
 }
 
-export async function listProducts(db: Queryable = getPool()): Promise<ProductRow[]> {
-  const { rows } = await db.query<DbRow>(`select ${COLUMNS} from products order by created_at desc, id`)
+/** Outside a transaction, reads go through `query()` so a dropped pooled connection is retried once. */
+const run = <T extends pg.QueryResultRow>(db: Queryable | undefined, text: string, params?: unknown[]) =>
+  db ? db.query<T>(text, params) : query<T>(text, params)
+
+export async function listProducts(db?: Queryable): Promise<ProductRow[]> {
+  const { rows } = await run<DbRow>(db, `select ${COLUMNS} from products order by created_at desc, id`)
   return rows.map(toProduct)
 }
 
-export async function getProduct(id: string, db: Queryable = getPool()): Promise<ProductRow | null> {
-  const { rows } = await db.query<DbRow>(`select ${COLUMNS} from products where id = $1`, [id])
+export async function getProduct(id: string, db?: Queryable): Promise<ProductRow | null> {
+  const { rows } = await run<DbRow>(db, `select ${COLUMNS} from products where id = $1`, [id])
   return rows[0] ? toProduct(rows[0]) : null
 }
 
@@ -192,7 +196,7 @@ export async function updateProduct(id: string, patch: Partial<ProductInput>): P
 }
 
 export async function deleteProduct(id: string): Promise<boolean> {
-  const { rowCount } = await getPool().query('delete from products where id = $1', [id])
+  const { rowCount } = await query('delete from products where id = $1', [id])
   return (rowCount ?? 0) > 0
 }
 

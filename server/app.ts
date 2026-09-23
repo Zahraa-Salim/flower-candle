@@ -2,7 +2,8 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import type { Context, Next } from 'hono'
 import { checkCredentials, isAuthConfigured, issueToken, verifyToken } from './auth.ts'
-import { getPool } from './db.ts'
+import { query } from './db.ts'
+import { pruneOrphanImagesInBackground } from './images.ts'
 import {
   ValidationError,
   createProduct,
@@ -50,7 +51,7 @@ export function createApp() {
 
   app.get('/health', async (c) => {
     try {
-      await getPool().query('select 1')
+      await query('select 1')
       return c.json({ ok: true, auth: isAuthConfigured() })
     } catch (err) {
       console.error('[شغف api] database unreachable', err)
@@ -83,10 +84,14 @@ export function createApp() {
   app.patch('/products/:id', requireAuth, async (c) => {
     const patch = parseProductInput(await c.req.json().catch(() => null), true)
     const updated = await updateProduct(c.req.param('id') ?? '', patch)
-    return updated ? c.json(updated) : fail(c, 404, 'المنتج غير موجود')
+    if (!updated) return fail(c, 404, 'المنتج غير موجود')
+    pruneOrphanImagesInBackground() // photos removed from the gallery are no longer referenced
+    return c.json(updated)
   })
   app.delete('/products/:id', requireAuth, async (c) => {
-    return (await deleteProduct(c.req.param('id') ?? '')) ? c.body(null, 204) : fail(c, 404, 'المنتج غير موجود')
+    if (!(await deleteProduct(c.req.param('id') ?? ''))) return fail(c, 404, 'المنتج غير موجود')
+    pruneOrphanImagesInBackground()
+    return c.body(null, 204)
   })
   /** Backup import: replaces the whole catalogue. */
   app.put('/products', requireAuth, async (c) => {
@@ -101,12 +106,13 @@ export function createApp() {
       }
     })
     await replaceAllProducts(items)
+    pruneOrphanImagesInBackground()
     return c.json({ count: items.length })
   })
 
   /* ---------- site content (hero images) ---------- */
   app.get('/site-content', async (c) => {
-    const { rows } = await getPool().query<{ value: unknown }>(`select value from site_content where key = 'hero'`)
+    const { rows } = await query<{ value: unknown }>(`select value from site_content where key = 'hero'`)
     return c.json({ hero: rows[0]?.value ?? {} })
   })
   app.patch('/site-content', requireAuth, async (c) => {
@@ -116,12 +122,13 @@ export function createApp() {
       const v = body?.hero?.[slot]
       if (typeof v === 'string') hero[slot] = v
     }
-    const { rows } = await getPool().query<{ value: Record<string, string> }>(
+    const { rows } = await query<{ value: Record<string, string> }>(
       `insert into site_content (key, value) values ('hero', $1::jsonb)
        on conflict (key) do update set value = site_content.value || excluded.value, updated_at = now()
        returning value`,
       [JSON.stringify(hero)],
     )
+    pruneOrphanImagesInBackground() // a replaced or reset hero photo is no longer referenced
     return c.json({ hero: rows[0].value })
   })
 
@@ -132,7 +139,8 @@ export function createApp() {
     if (!match) return fail(c, 400, 'الصورة غير صالحة.')
     const bytes = Buffer.from(match[2], 'base64')
     if (bytes.length === 0 || bytes.length > MAX_IMAGE_BYTES) return fail(c, 413, 'حجم الصورة كبير جداً.')
-    const { rows } = await getPool().query<{ id: string }>(
+    // A retried insert after a dropped connection can leave a duplicate row; the orphan prune removes it later.
+    const { rows } = await query<{ id: string }>(
       'insert into images (mime, bytes, size) values ($1, $2, $3) returning id',
       [match[1], bytes, bytes.length],
     )
@@ -141,7 +149,7 @@ export function createApp() {
   app.get('/images/:id', async (c) => {
     const id = c.req.param('id') ?? ''
     if (!/^[0-9a-f-]{36}$/i.test(id)) return fail(c, 404, 'الصورة غير موجودة')
-    const { rows } = await getPool().query<{ mime: string; bytes: Buffer }>('select mime, bytes from images where id = $1', [id])
+    const { rows } = await query<{ mime: string; bytes: Buffer }>('select mime, bytes from images where id = $1', [id])
     if (!rows[0]) return fail(c, 404, 'الصورة غير موجودة')
     return c.body(new Uint8Array(rows[0].bytes), 200, {
       'Content-Type': rows[0].mime,

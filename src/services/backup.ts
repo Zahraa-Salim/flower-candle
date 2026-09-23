@@ -4,9 +4,9 @@ import { sanitizeProduct } from './products'
 import { normalizeSiteContent } from './siteContent'
 
 /**
- * Backup file for the admin data (catalogue + hero images). Because storage is
- * browser-local, this is the owner's only way to move data between devices or
- * recover after clearing site data. The same JSON can seed a future backend.
+ * Backup file for the admin data (catalogue + hero images): a copy to keep, or a
+ * way to move the catalogue to another database. In the browser-only demo mode it
+ * is also the only way to carry data between devices or survive clearing site data.
  */
 export interface BackupFile {
   version: 1

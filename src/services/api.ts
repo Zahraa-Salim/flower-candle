@@ -40,6 +40,13 @@ export class ApiError extends Error {
 
 const NETWORK_ERROR = 'تعذّر الاتصال بالخادم. تحققي من اتصالك ثم أعيدي المحاولة.'
 
+/**
+ * Dispatched on `window` when a request that carried a session token is rejected
+ * with 401 (expired or invalid token). AuthContext listens and signs the admin out.
+ * A failed login also answers 401 but never carries a token, so it does not fire this.
+ */
+export const SESSION_EXPIRED_EVENT = 'shaghaf:session-expired'
+
 export async function api<T>(path: string, init: RequestInit & { json?: unknown } = {}): Promise<T> {
   const headers = new Headers(init.headers)
   const token = tokenStore.get()
@@ -55,7 +62,10 @@ export async function api<T>(path: string, init: RequestInit & { json?: unknown 
   } catch {
     throw new ApiError(0, NETWORK_ERROR)
   }
-  if (response.status === 401) tokenStore.clear()
+  if (response.status === 401 && token && path !== '/auth/login') {
+    tokenStore.clear()
+    window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT))
+  }
   if (!response.ok) {
     let message = 'حدث خطأ في الخادم.'
     try {

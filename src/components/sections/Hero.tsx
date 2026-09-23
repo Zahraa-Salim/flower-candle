@@ -30,6 +30,7 @@ export function Hero() {
         <div className="lg:col-span-5">
           <motion.h1 {...fade(0)} id="hero-title" className="flex flex-col gap-3">
             <span className="display">{siteConfig.name}</span>
+            {/* Whitespace node: ignored by flex layout, but keeps the accessible name from reading as one word. */}{' '}
             <span className="text-xl font-normal text-brown-2 sm:text-2xl">{siteConfig.tagline}</span>
           </motion.h1>
           <motion.p {...fade(0.12)} className="lead mt-6 max-w-md">

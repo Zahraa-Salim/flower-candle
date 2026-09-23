@@ -1,7 +1,9 @@
 /**
- * Central image registry.
- * Temporary photography comes from Unsplash. Replace any value here with a
- * Supabase Storage URL later and every component picks it up automatically.
+ * Central image registry for the stock photography (Unsplash) used by the demo
+ * catalogue, the default hero, the category tiles and the home-page gallery.
+ * The owner replaces product and hero photos by uploading them in the dashboard;
+ * those are stored in the `images` table and served at /api/images/<id>. To
+ * change a section photo that has no upload UI yet, edit the value here.
  */
 const UNSPLASH = 'https://images.unsplash.com/photo-'
 

@@ -79,7 +79,7 @@ export function AdminLayout() {
       {/* Mobile top bar */}
       <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-line bg-ivory/90 px-4 backdrop-blur-md lg:hidden">
         <p className="flex items-baseline gap-2">
-          <span className="text-2xl font-light leading-none text-brown">{siteConfig.name}</span>
+          <span className="text-2xl font-light leading-none text-brown">{siteConfig.name}</span>{' '}
           <span className="text-xs text-muted">الإدارة</span>
         </p>
         <button

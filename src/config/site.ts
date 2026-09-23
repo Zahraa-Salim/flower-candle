@@ -4,9 +4,11 @@
  * has a sensible default so the app runs without one. Nothing brand-related is
  * duplicated across components.
  *
- * Note: Vite embeds every `VITE_*` value into the public bundle, including the
- * admin password. This is acceptable for a single-owner storefront where the
- * admin area only edits data in the same browser; it is NOT a security boundary.
+ * Note: Vite embeds every `VITE_*` value into the public bundle. In the default
+ * API mode the admin credentials are server-only (ADMIN_USERNAME / ADMIN_PASSWORD,
+ * checked in server/auth.ts) and never reach the browser. Only the browser-only
+ * demo mode (VITE_DATA_SOURCE=local) reads VITE_ADMIN_* here, and that is a
+ * convenience, not a security boundary.
  */
 const env = import.meta.env
 

@@ -5,12 +5,17 @@ import { api, tokenStore } from './api'
 export interface AdminSession {
   username: string
   signedInAt: string
+  /** Epoch ms when the server-issued token stops being accepted (API mode only). */
+  expiresAt?: number
 }
 
 /**
- * Auth contract. The current implementation checks a single username/password
- * pair from `.env` (no user accounts). A server-checked variant can replace it
- * later; the AuthContext only depends on this interface.
+ * Auth contract: a single owner login, no user accounts. Two implementations,
+ * chosen by `VITE_DATA_SOURCE`: `HttpAuthService` (default) sends the credentials
+ * to the server, which checks them against ADMIN_USERNAME / ADMIN_PASSWORD and
+ * returns a signed, expiring token; `EnvAuthService` (browser-only demo mode)
+ * compares against VITE_ADMIN_* in the bundle. The AuthContext only depends on
+ * this interface.
  */
 export interface AuthService {
   /** True when credentials are configured at all. */
@@ -65,6 +70,18 @@ class EnvAuthService implements AuthService {
  * API mode: the server checks ADMIN_USERNAME / ADMIN_PASSWORD (never shipped to
  * the browser) and returns a signed, expiring token stored in sessionStorage.
  */
+/** Reads the unsigned payload of a `payload.signature` token; null when malformed or already expired. */
+function decodeToken(token: string, now = Date.now()): { username: string; exp: number } | null {
+  const [payload] = token.split('.')
+  try {
+    const parsed = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))) as { username?: unknown; exp?: unknown }
+    if (typeof parsed.username !== 'string' || typeof parsed.exp !== 'number' || parsed.exp < now) return null
+    return { username: parsed.username, exp: parsed.exp }
+  } catch {
+    return null
+  }
+}
+
 class HttpAuthService implements AuthService {
   isConfigured(): boolean {
     return true // the server reports a clear error on login if its credentials are missing
@@ -73,18 +90,12 @@ class HttpAuthService implements AuthService {
   getSession(): AdminSession | null {
     const token = tokenStore.get()
     if (!token) return null
-    const [payload] = token.split('.')
-    try {
-      const parsed = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))) as { username?: unknown; exp?: unknown }
-      if (typeof parsed.username !== 'string' || typeof parsed.exp !== 'number' || parsed.exp < Date.now()) {
-        tokenStore.clear()
-        return null
-      }
-      return { username: parsed.username, signedInAt: '' }
-    } catch {
+    const decoded = decodeToken(token)
+    if (!decoded) {
       tokenStore.clear()
       return null
     }
+    return { username: decoded.username, signedInAt: '', expiresAt: decoded.exp }
   }
 
   async signIn(username: string, password: string): Promise<AdminSession> {
@@ -93,7 +104,7 @@ class HttpAuthService implements AuthService {
       json: { username, password },
     })
     tokenStore.set(token)
-    return { username: name, signedInAt: new Date().toISOString() }
+    return { username: name, signedInAt: new Date().toISOString(), expiresAt: decodeToken(token)?.exp }
   }
 
   async signOut(): Promise<void> {

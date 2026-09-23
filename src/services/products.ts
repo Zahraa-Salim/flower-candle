@@ -7,8 +7,10 @@ import { sleep, slugify, uid } from '@/lib/utils'
 import { ApiError, absoluteApiUrl, api } from './api'
 
 /**
- * Data access contract. The UI only talks to this interface, so swapping the
- * mock implementation for a Supabase-backed one is a one-line change below.
+ * Data access contract. The UI only talks to this interface. Two implementations,
+ * chosen by `VITE_DATA_SOURCE` at the bottom of this file: `HttpProductRepository`
+ * (default) calls the JSON API in server/app.ts backed by PostgreSQL, and
+ * `MockProductRepository` keeps a demo catalogue in the browser (IndexedDB).
  */
 export interface ProductRepository {
   list(): Promise<Product[]>

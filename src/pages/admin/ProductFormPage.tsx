@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ChevronLeft, RefreshCw } from 'lucide-react'
 import type { ProductInput } from '@/types/product'
+import { ApiError } from '@/services/api'
 import { useProducts } from '@/hooks/useProducts'
 import { useToast } from '@/hooks/useToast'
 import { useDocumentMeta } from '@/hooks/useDocumentMeta'
@@ -36,6 +37,8 @@ export default function ProductFormPage({ mode }: { mode: 'new' | 'edit' }) {
       }
       navigate('/admin/products')
     } catch (err) {
+      // An expired session already shows its own toast and redirects to the login page.
+      if (err instanceof ApiError && err.status === 401) return
       show(err instanceof Error ? err.message : 'تعذّر حفظ المنتج', 'error')
     } finally {
       setSubmitting(false)

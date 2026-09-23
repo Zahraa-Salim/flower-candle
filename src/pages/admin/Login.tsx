@@ -61,7 +61,7 @@ export default function AdminLoginPage() {
 
           {!isConfigured && (
             <p role="alert" className="mt-6 rounded-md bg-danger-soft px-3.5 py-2.5 text-sm text-danger">
-              لم يتم ضبط بيانات الدخول. أضيفي <span className="num" dir="ltr">VITE_ADMIN_USERNAME</span> و{' '}
+              لم يتم ضبط بيانات الدخول للوضع التجريبي. أضيفي <span className="num" dir="ltr">VITE_ADMIN_USERNAME</span> و{' '}
               <span className="num" dir="ltr">VITE_ADMIN_PASSWORD</span> في ملف <span className="num" dir="ltr">.env</span> ثم أعيدي التشغيل.
             </p>
           )}
