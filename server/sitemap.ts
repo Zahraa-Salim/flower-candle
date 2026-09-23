@@ -5,7 +5,7 @@ import { query } from './db.ts'
  * sitemap.xml is generated at request time from the catalogue in PostgreSQL,
  * so products added or removed in the dashboard are reflected without a
  * rebuild. Served by server/index.ts (npm start), by the Vercel function
- * (api/[[...route]].ts via the /sitemap.xml rewrite in vercel.json) and by
+ * (api/index.ts via the /sitemap.xml rewrite in vercel.json) and by
  * vite.config.ts in development.
  */
 export interface SitemapEntry {

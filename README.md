@@ -108,7 +108,7 @@ Notes:
 
 ### Vercel (site + API in one project)
 
-The repository is ready for Vercel with no extra configuration: the site is built with the Vite preset and the API runs as one serverless function (`api/[[...route]].ts` exposes the same Hono app as `npm start`). `vercel.json` rewrites `/sitemap.xml` to the function and deep links to `index.html`.
+The repository is ready for Vercel with no extra configuration: the site is built with the Vite preset and the API runs as one serverless function (`api/index.ts` exposes the same Hono app as `npm start`). `vercel.json` rewrites every `/api/*` path and `/sitemap.xml` to that function, and deep links to `index.html`.
 
 1. Import the GitHub repository in Vercel (framework preset: Vite).
 2. In **Settings → Environment Variables** add every variable from the table above that the site needs. Required: `VITE_WHATSAPP_NUMBER`, `VITE_SITE_URL` (the Vercel or custom domain), `DATABASE_URL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `AUTH_SECRET`. Leave `VITE_API_URL` and `CORS_ORIGIN` empty (same origin). `AUTH_SECRET` is mandatory here: without it every function instance would sign tokens with a different random secret and the admin would be logged out at random.

@@ -22,6 +22,10 @@ const DATA_URL = /^data:(image\/(?:jpeg|png|webp|gif));base64,([A-Za-z0-9+/=]+)$
 
 const fail = (c: Context, status: 400 | 401 | 404 | 409 | 413 | 500 | 503, error: string) => c.json({ error }, status)
 
+// A missing DATABASE_URL is a deployment mistake, not a runtime fault: say so instead of a generic 500.
+const DATABASE_URL_MISSING = 'DATABASE_URL غير مضبوط على الخادم (أضيفيه إلى متغيرات البيئة).'
+const isMissingDatabaseUrl = (err: unknown) => err instanceof Error && err.message.startsWith('DATABASE_URL is not set')
+
 async function requireAuth(c: Context, next: Next) {
   const header = c.req.header('authorization') ?? ''
   const token = header.startsWith('Bearer ') ? header.slice(7) : undefined
@@ -43,6 +47,7 @@ export function createApp() {
 
   app.onError((err, c) => {
     if (err instanceof ValidationError) return fail(c, 400, err.message)
+    if (isMissingDatabaseUrl(err)) return fail(c, 503, DATABASE_URL_MISSING)
     const pgCode = (err as { code?: string }).code
     if (pgCode === '23503') return fail(c, 400, 'التصنيف غير موجود.')
     if (pgCode === '23505') return fail(c, 409, 'يوجد منتج آخر بنفس المعرّف أو الغلاف.')
@@ -55,6 +60,7 @@ export function createApp() {
       await query('select 1')
       return c.json({ ok: true, auth: isAuthConfigured() })
     } catch (err) {
+      if (isMissingDatabaseUrl(err)) return fail(c, 503, DATABASE_URL_MISSING)
       console.error('[شغف api] database unreachable', err)
       return fail(c, 503, 'تعذّر الوصول إلى قاعدة البيانات.')
     }
