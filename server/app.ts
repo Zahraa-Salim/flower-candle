@@ -26,6 +26,18 @@ const fail = (c: Context, status: 400 | 401 | 404 | 409 | 413 | 500 | 503, error
 const DATABASE_URL_MISSING = 'DATABASE_URL غير مضبوط على الخادم (أضيفيه إلى متغيرات البيئة).'
 const isMissingDatabaseUrl = (err: unknown) => err instanceof Error && err.message.startsWith('DATABASE_URL is not set')
 
+/** Plain-language cause for the most common connection failures, keyed by the driver's error code. */
+function databaseHint(code: string, err: unknown): string {
+  const message = err instanceof Error ? err.message : ''
+  if (code === '28P01' || code === '28000') return 'اسم المستخدم أو كلمة المرور في DATABASE_URL غير صحيحة (انتبهي: لا تكتبي \\$ خارج ملف .env).'
+  if (code === '3D000') return 'اسم قاعدة البيانات في DATABASE_URL غير موجود.'
+  if (code === 'ENOTFOUND' || code === 'EAI_AGAIN') return 'اسم الخادم في DATABASE_URL غير صحيح.'
+  if (code === 'ETIMEDOUT' || code === 'ECONNREFUSED' || /timeout exceeded/i.test(message)) return 'تعذّر الاتصال بالخادم (مهلة الاتصال).'
+  if (/certificate|self[- ]signed|SSL|TLS/i.test(message)) return 'مشكلة في شهادة TLS: تأكدي من sslmode=require في DATABASE_URL.'
+  if (/invalid url|Invalid URL|ERR_INVALID_URL/i.test(message)) return 'DATABASE_URL ليس رابطاً صالحاً (postgresql://user:password@host/db?sslmode=require).'
+  return message.slice(0, 120)
+}
+
 async function requireAuth(c: Context, next: Next) {
   const header = c.req.header('authorization') ?? ''
   const token = header.startsWith('Bearer ') ? header.slice(7) : undefined
@@ -62,7 +74,9 @@ export function createApp() {
     } catch (err) {
       if (isMissingDatabaseUrl(err)) return fail(c, 503, DATABASE_URL_MISSING)
       console.error('[شغف api] database unreachable', err)
-      return fail(c, 503, 'تعذّر الوصول إلى قاعدة البيانات.')
+      // The code and hint let the owner diagnose a bad DATABASE_URL from the browser; no secrets are echoed.
+      const code = (err as { code?: string }).code ?? 'UNKNOWN'
+      return c.json({ error: 'تعذّر الوصول إلى قاعدة البيانات.', code, hint: databaseHint(code, err) }, 503)
     }
   })
 
