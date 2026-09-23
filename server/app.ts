@@ -31,7 +31,10 @@ function databaseHint(code: string, err: unknown): string {
   const message = err instanceof Error ? err.message : ''
   if (code === '28P01' || code === '28000') return 'اسم المستخدم أو كلمة المرور في DATABASE_URL غير صحيحة (انتبهي: لا تكتبي \\$ خارج ملف .env).'
   if (code === '3D000') return 'اسم قاعدة البيانات في DATABASE_URL غير موجود.'
-  if (code === 'ENOTFOUND' || code === 'EAI_AGAIN') return 'اسم الخادم في DATABASE_URL غير صحيح.'
+  if (code === 'ENOTFOUND' || code === 'EAI_AGAIN') {
+    const host = (err as { hostname?: string }).hostname
+    return `اسم الخادم في DATABASE_URL غير صحيح${host ? ` (تعذّر العثور على: ${host})` : ''}.`
+  }
   if (code === 'ETIMEDOUT' || code === 'ECONNREFUSED' || /timeout exceeded/i.test(message)) return 'تعذّر الاتصال بالخادم (مهلة الاتصال).'
   if (/certificate|self[- ]signed|SSL|TLS/i.test(message)) return 'مشكلة في شهادة TLS: تأكدي من sslmode=require في DATABASE_URL.'
   if (/invalid url|Invalid URL|ERR_INVALID_URL/i.test(message)) return 'DATABASE_URL ليس رابطاً صالحاً (postgresql://user:password@host/db?sslmode=require).'
