@@ -45,9 +45,24 @@ export function pruneOrphanImages(olderThanHours = PRUNE_GRACE_HOURS): Promise<s
   return inflight
 }
 
-/** Fire-and-forget variant for request handlers: runs after the owner's change is committed, never blocks the response. */
+/** Fire-and-forget variant: never blocks the caller (used by the long-running Node server). */
 export function pruneOrphanImagesInBackground(): void {
-  pruneOrphanImages()
+  void pruneOrphanImagesQuietly()
+}
+
+/**
+ * For request handlers, after the owner's change is committed. On a long-running
+ * server it runs in the background; on a serverless platform (Vercel) the process
+ * may be frozen as soon as the response is sent, so there it is awaited instead.
+ * It is one small query, so the extra latency on admin writes is negligible.
+ */
+export function pruneOrphanImagesAfterWrite(): Promise<void> {
+  const promise = pruneOrphanImagesQuietly()
+  return process.env.VERCEL ? promise : Promise.resolve()
+}
+
+function pruneOrphanImagesQuietly(): Promise<void> {
+  return pruneOrphanImages()
     .then((ids) => {
       if (ids.length > 0) console.log(`[شغف] pruned ${ids.length} unreferenced image(s)`)
     })

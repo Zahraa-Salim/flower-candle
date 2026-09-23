@@ -5,6 +5,7 @@
  *   npm start            (reads .env if present; PORT defaults to 3000)
  *
  * Requires Node 22.18+ (TypeScript is run directly via type stripping).
+ * On Vercel this file is not used: api/[[...route]].ts exposes the same API.
  */
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -14,7 +15,7 @@ import { serveStatic } from '@hono/node-server/serve-static'
 import { createApp } from './app.ts'
 import { query } from './db.ts'
 import { pruneOrphanImagesInBackground } from './images.ts'
-import { buildSitemapXml, listSitemapEntries } from './sitemap.ts'
+import { sitemapHandler } from './sitemap.ts'
 
 const root = resolve(import.meta.dirname, '..')
 const dist = resolve(root, 'dist')
@@ -26,27 +27,8 @@ if (!existsSync(resolve(dist, 'index.html'))) {
 const app = new Hono()
 app.route('/', createApp())
 
-/* ---------- sitemap.xml: generated from the database on every request ---------- */
-let warnedSiteUrl = false
-app.get('/sitemap.xml', async (c) => {
-  let siteUrl = (process.env.VITE_SITE_URL ?? '').trim().replace(/\/+$/, '')
-  if (!siteUrl) {
-    siteUrl = new URL(c.req.url).origin
-    if (!warnedSiteUrl) {
-      warnedSiteUrl = true
-      console.warn(`[شغف] VITE_SITE_URL is not set; sitemap.xml uses the request origin (${siteUrl}). Set it in .env to the public URL.`)
-    }
-  }
-  let entries: Awaited<ReturnType<typeof listSitemapEntries>> = []
-  try {
-    entries = await listSitemapEntries()
-  } catch (err) {
-    console.error('[شغف] sitemap: database unavailable, serving static pages only', err)
-  }
-  c.header('Content-Type', 'application/xml; charset=utf-8')
-  c.header('Cache-Control', 'public, max-age=3600')
-  return c.body(buildSitemapXml(siteUrl, entries))
-})
+// Generated from the database on every request (server/sitemap.ts).
+app.get('/sitemap.xml', sitemapHandler)
 
 /* ---------- static site ---------- */
 // Hashed build output and self-hosted fonts never change under the same URL. Set the header after

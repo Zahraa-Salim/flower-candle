@@ -10,6 +10,12 @@ const TOKEN_TTL_MS = 12 * 60 * 60 * 1000
 
 let ephemeralSecret: string | null = null
 
+/**
+ * On a serverless platform every instance would invent its own random secret, so a
+ * token issued by one instance is rejected by the next: there AUTH_SECRET is required.
+ */
+const serverless = Boolean(process.env.VERCEL)
+
 function secret(): string {
   const configured = process.env.AUTH_SECRET?.trim()
   if (configured) return configured
@@ -21,7 +27,14 @@ function secret(): string {
 }
 
 export function isAuthConfigured(): boolean {
-  return Boolean(process.env.ADMIN_USERNAME?.trim() && process.env.ADMIN_PASSWORD)
+  const credentials = Boolean(process.env.ADMIN_USERNAME?.trim() && process.env.ADMIN_PASSWORD)
+  return credentials && (!serverless || Boolean(process.env.AUTH_SECRET?.trim()))
+}
+
+/** What the login endpoint tells the owner when sign-in is impossible. */
+export function authConfigError(): string {
+  if (serverless && !process.env.AUTH_SECRET?.trim()) return 'لم يتم ضبط AUTH_SECRET على الخادم (مطلوب على Vercel).'
+  return 'لم يتم ضبط بيانات الدخول على الخادم (ADMIN_USERNAME / ADMIN_PASSWORD).'
 }
 
 const b64url = (buf: Buffer) => buf.toString('base64url')

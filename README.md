@@ -106,6 +106,18 @@ Notes:
 
 ## Deploying
 
+### Vercel (site + API in one project)
+
+The repository is ready for Vercel with no extra configuration: the site is built with the Vite preset and the API runs as one serverless function (`api/[[...route]].ts` exposes the same Hono app as `npm start`). `vercel.json` rewrites `/sitemap.xml` to the function and deep links to `index.html`.
+
+1. Import the GitHub repository in Vercel (framework preset: Vite).
+2. In **Settings → Environment Variables** add every variable from the table above that the site needs. Required: `VITE_WHATSAPP_NUMBER`, `VITE_SITE_URL` (the Vercel or custom domain), `DATABASE_URL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `AUTH_SECRET`. Leave `VITE_API_URL` and `CORS_ORIGIN` empty (same origin). `AUTH_SECRET` is mandatory here: without it every function instance would sign tokens with a different random secret and the admin would be logged out at random.
+3. Redeploy. `/api/health` must answer `{"ok":true,"auth":true}`.
+
+Notes: uploads go through the function, whose request body limit is about 4.5 MB; photos are resized in the browser to well under that. Orphaned photos are pruned right after each product or hero change (there is no long-running process to do it daily); `npm run db:prune-images` still works from your machine.
+
+### Any Node host (single process)
+
 Any host that runs Node 22.18+ works: run `npm ci && npm run build`, set the environment variables from the table above, then `npm start`. The process serves the site and the API on `PORT`. Put HTTPS in front of it (a reverse proxy or the host's own TLS). If you prefer a static host for the site, host the API separately with `npm start`, set `VITE_API_URL` to its origin and `CORS_ORIGIN` to the site's origin, and give the static host an SPA fallback to `index.html`.
 
 ## Cart

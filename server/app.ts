@@ -1,9 +1,10 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import type { Context, Next } from 'hono'
-import { checkCredentials, isAuthConfigured, issueToken, verifyToken } from './auth.ts'
+import { authConfigError, checkCredentials, isAuthConfigured, issueToken, verifyToken } from './auth.ts'
 import { query } from './db.ts'
-import { pruneOrphanImagesInBackground } from './images.ts'
+import { pruneOrphanImagesAfterWrite } from './images.ts'
+import { sitemapHandler } from './sitemap.ts'
 import {
   ValidationError,
   createProduct,
@@ -61,7 +62,7 @@ export function createApp() {
 
   /* ---------- auth ---------- */
   app.post('/auth/login', async (c) => {
-    if (!isAuthConfigured()) return fail(c, 503, 'لم يتم ضبط بيانات الدخول على الخادم (ADMIN_USERNAME / ADMIN_PASSWORD).')
+    if (!isAuthConfigured()) return fail(c, 503, authConfigError())
     const body = (await c.req.json().catch(() => null)) as { username?: unknown; password?: unknown } | null
     const username = typeof body?.username === 'string' ? body.username : ''
     const password = typeof body?.password === 'string' ? body.password : ''
@@ -85,12 +86,12 @@ export function createApp() {
     const patch = parseProductInput(await c.req.json().catch(() => null), true)
     const updated = await updateProduct(c.req.param('id') ?? '', patch)
     if (!updated) return fail(c, 404, 'المنتج غير موجود')
-    pruneOrphanImagesInBackground() // photos removed from the gallery are no longer referenced
+    await pruneOrphanImagesAfterWrite() // photos removed from the gallery are no longer referenced
     return c.json(updated)
   })
   app.delete('/products/:id', requireAuth, async (c) => {
     if (!(await deleteProduct(c.req.param('id') ?? ''))) return fail(c, 404, 'المنتج غير موجود')
-    pruneOrphanImagesInBackground()
+    await pruneOrphanImagesAfterWrite()
     return c.body(null, 204)
   })
   /** Backup import: replaces the whole catalogue. */
@@ -106,7 +107,7 @@ export function createApp() {
       }
     })
     await replaceAllProducts(items)
-    pruneOrphanImagesInBackground()
+    await pruneOrphanImagesAfterWrite()
     return c.json({ count: items.length })
   })
 
@@ -128,9 +129,12 @@ export function createApp() {
        returning value`,
       [JSON.stringify(hero)],
     )
-    pruneOrphanImagesInBackground() // a replaced or reset hero photo is no longer referenced
+    await pruneOrphanImagesAfterWrite() // a replaced or reset hero photo is no longer referenced
     return c.json({ hero: rows[0].value })
   })
+
+  /* ---------- sitemap (reached as /sitemap.xml through a rewrite on Vercel) ---------- */
+  app.get('/sitemap.xml', sitemapHandler)
 
   /* ---------- images ---------- */
   app.post('/images', requireAuth, async (c) => {

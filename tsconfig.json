@@ -3,5 +3,19 @@
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
-  ]
+  ],
+  // Not used by `tsc -b` (each referenced project has its own options). Read by Vercel's
+  // function builder, which compiles api/ and the traced server/*.ts files with the
+  // project's TypeScript and emits them as .js: the `.ts` import specifiers the Node
+  // server needs (type stripping) are rewritten to `.js` for that output.
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  }
 }

@@ -20,8 +20,8 @@ export default defineConfig([
     },
   },
   {
-    // Node-side TypeScript (API server, Vite config): same rules, Node globals.
-    files: ['vite.config.ts', 'server/**/*.ts'],
+    // Node-side TypeScript (API server, Vercel function entry, Vite config): same rules, Node globals.
+    files: ['vite.config.ts', 'server/**/*.ts', 'api/**/*.ts'],
     languageOptions: {
       globals: globals.node,
     },

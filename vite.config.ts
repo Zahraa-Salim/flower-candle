@@ -8,8 +8,8 @@ import { mockProducts } from './src/data/products.ts'
 import { createApp } from './server/app.ts'
 import { buildSitemapXml, escapeXml as escapeHtml, listSitemapEntries } from './server/sitemap.ts'
 
-/** Server-only variables the dev API bridge needs (never exposed to the client bundle). */
-const SERVER_ENV = ['DATABASE_URL', 'ADMIN_USERNAME', 'ADMIN_PASSWORD', 'AUTH_SECRET', 'CORS_ORIGIN'] as const
+/** Variables the dev API bridge needs in process.env (the server-only ones never reach the client bundle). */
+const SERVER_ENV = ['DATABASE_URL', 'ADMIN_USERNAME', 'ADMIN_PASSWORD', 'AUTH_SECRET', 'CORS_ORIGIN', 'VITE_SITE_URL'] as const
 
 /** Trimmed env value, or the fallback when unset/blank (mirrors src/config/site.ts). */
 const read = (value: string | undefined, fallback = ''): string => (value ?? '').trim() || fallback
